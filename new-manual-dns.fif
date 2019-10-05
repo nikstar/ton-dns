@@ -1,0 +1,72 @@
+#!/usr/bin/env fift -s
+"TonUtil.fif" include
+"Asm.fif" include
+
+// parse arguments
+{ ."usage: " @' $0 type ." <workchain-id> <filename-base>" cr
+  ."Creates a new manual DNS in specified workchain, with private key saved to or loaded from <filename-base>.pk" cr
+} : usage
+{ ' usage if } : ?usage
+
+$# 2 <> ?usage
+
+$1 parse-workchain-id constant workchain-id
+$2 constant filename-base
+."arguments: workchain-id " workchain-id . .", filename-base: " filename-base type cr cr
+
+
+// load or generate keypair
+filename-base +".pk" load-generate-keypair constant private-key constant public-key cr
+
+// construct message
+"manual-dns.fif" include =: code
+code ."code: " cr <s csr. cr 
+
+<b 
+  public-key B, // public key
+b> =: data
+data ."data: " cr <s csr. cr 
+
+null =: libraries
+
+<b 
+    b{0011} s, 
+    code ref, 
+    data ref, 
+    libraries dict, 
+b>  =: initial-state
+initial-state ."initial state: " cr <s csr. cr 
+
+// generate address and report
+workchain-id initial-state hashu 2=: wallet_addr
+wallet_addr filename-base +".addr" save-address-verbose
+
+."address:" cr
+."raw        = " wallet_addr .addr cr
+."init       = " wallet_addr 7 .Addr cr
+."bounceable = " wallet_addr 6 .Addr cr
+cr
+
+// sign
+<b 0 32 u, -1 32 i, b> =: signing-message
+signing-message ."signing message: " cr <s csr. cr
+signing-message hashu private-key ed25519_sign_uint =: signature
+
+
+// create external message
+<b 
+    b{1000100} s, 
+    wallet_addr addr, 
+    b{000010} s, 
+    initial-state <s s, 
+    b{0} s, 
+    signature B, 
+    signing-message <s s, 
+b>
+dup ."external message for init:" cr <s csr. cr
+
+
+// save to file
+2 boc+>B dup Bx. cr
+filename-base +".boc" tuck B>file
+."saved external message to file: " type cr
