@@ -1,0 +1,29 @@
+"Asm.fif" include
+"TonUtil.fif" include
+
+"test-manual-dns.fif" include <s =: code
+
+"out/id1.pk" load-keypair =: pubkey1 =: privkey1
+"out/id2.pk" load-keypair =: pubkey2 =: privkey2
+
+<b
+    pubkey1 B,
+b> =: storage
+
+<b
+    1 8 u,
+    pubkey2 B,
+b> =: message
+message hashu privkey1 ed25519_sign_uint =: signature
+
+<b
+    signature B,
+    message <s s,
+b> <s =: in_msg
+
+in_msg code storage runvm
+
+constant updated_storage
+constant exit_code
+."Exit code " exit_code . cr
+."Updated storage: " cr updated_storage <s csr. cr

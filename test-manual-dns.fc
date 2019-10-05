@@ -1,0 +1,44 @@
+;; // Manual DNS smart contract
+;; // 
+;; // 1) Processes external messages signed by the owner (public key stored)
+;; // 2) Register new entries by signed external messages
+;; // 3) Option to change owner
+;; // 4) Responds to dnsresolve
+;; // 
+;; // - no seqno for now
+;; // 
+
+() main(slice in_msg) impure { 
+  var stored = get_data().begin_parse();
+  
+  var signature = in_msg~load_bits(512);
+  var public_key = stored~load_uint(256);
+  throw_unless(32, check_signature(slice_hash(in_msg), signature, public_key));
+  
+  var opcode = in_msg~load_uint(8);
+  throw_unless(33, opcode <= 1);
+  
+  accept_message();
+
+  if opcode == 0 { ;; // register
+
+  } 
+  
+  if opcode == 1 { ;; // change owner
+    var new_public_key = in_msg~load_uint(256);
+    
+    var new_stored = begin_cell();
+    new_stored~store_uint(new_public_key, 256);
+    set_data(new_stored.end_cell());
+  }
+}
+
+;; // Get methods
+
+int answer() method_id {
+  return 42;
+}
+
+(int, cell) dnsresolve() method_id {
+  return (42, new_dict());
+}
