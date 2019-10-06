@@ -33,13 +33,3 @@
     set_data(new_storage.end_cell());
   }
 }
-
-;; // Get methods
-
-int answer() method_id {
-  return 42;
-}
-
-(int, cell) dnsresolve() method_id {
-  return (42, new_dict());
-}
