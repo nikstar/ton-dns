@@ -1,21 +1,22 @@
 ;; // Manual DNS smart contract
 ;; // 
-;; // 1) Processes external messages signed by the owner (public key stored)
-;; // 2) Register new entries by signed external messages
+;; // 1) Processes external messages signage by the owner (public key storage)
+;; // 2) Register new entries by signage external messages
 ;; // 3) Option to change owner
 ;; // 4) Responds to dnsresolve
 ;; // 
 ;; // - no seqno for now
 ;; // 
 
-() main(slice in_msg) impure { 
-  var stored = get_data().begin_parse();
+() main(slice signed_message) impure { 
   
-  var signature = in_msg~load_bits(512);
-  var public_key = stored~load_uint(256);
-  ;;// throw_unless(32, check_signature(slice_hash(in_msg), signature, public_key));
+  var storage = get_data().begin_parse();
+  var public_key = storage~load_uint(256);
   
-  var opcode = in_msg~load_uint(8);
+  var (signature, message) = (signed_message~load_bits(512), signed_message);
+  throw_unless(32, check_signature(slice_hash(message), signature, public_key));
+  
+  var opcode = signed_message~load_uint(8);
   throw_unless(33, opcode <= 1);
   
   accept_message();
@@ -25,11 +26,11 @@
   } 
   
   if opcode == 1 { ;; // change owner
-    var new_public_key = in_msg~load_uint(256);
+    var new_public_key = signed_message~load_uint(256);
     
-    var new_stored = begin_cell();
-    new_stored~store_uint(new_public_key, 256);
-    set_data(new_stored.end_cell());
+    var new_storage = begin_cell();
+    new_storage~store_uint(new_public_key, 256);
+    set_data(new_storage.end_cell());
   }
 }
 
