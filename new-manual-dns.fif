@@ -19,11 +19,12 @@ $2 constant filename-base
 filename-base +".pk" load-generate-keypair constant private-key constant public-key cr
 
 // construct message
-"manual-dns.fif" include =: code
+"build/manual-dns.fif" include =: code
 code ."code: " cr <s csr. cr 
 
 <b 
   public-key B, // public key
+  <b b> ref,
 b> =: data
 data ."data: " cr <s csr. cr 
 

@@ -8,6 +8,7 @@
 
 <b
     pubkey1 B,
+    <b b> ref,
 b> =: storage
 
 <b
