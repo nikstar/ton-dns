@@ -1,6 +1,8 @@
 "Asm.fif" include
 "TonUtil.fif" include
 
+{ 0 -rot runvm } : runvm!
+
 "test-manual-dns.fif" include <s =: code
 
 "test/out/id1.pk" load-keypair =: privkey1 =: pubkey1
@@ -39,7 +41,7 @@ b> <s =: signed-message
 
 ."Checking signature localy: " message hashB signature pubkey1 ed25519_chksign x. cr cr
 
-signed-message code storage runvm =: storage =: exit_code cr
+signed-message code storage runvm! =: storage =: exit_code cr
 ."Result #1: " cr
 ."Exit code " exit_code . cr
 ."Updated storage: " cr storage <s csr. cr

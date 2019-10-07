@@ -9,7 +9,6 @@
 ;; // 
 
 () main(slice signed_message) impure { 
-  throw(2);
   var storage = get_data().begin_parse();
   var public_key = storage~load_uint(256);
   
@@ -34,7 +33,7 @@
     var d1 = new_dict()
       .idict_set_ref(32, category, begin_cell().store_slice(value).end_cell());
     var dict = new_dict()
-      .idict_set_ref(256, slice_hash(key), d1);
+      .udict_set_ref(256, slice_hash(key), d1);
     
     set_data(begin_cell()
       .store_uint(public_key, 256)
