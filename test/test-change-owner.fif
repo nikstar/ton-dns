@@ -3,8 +3,8 @@
 
 "test-manual-dns.fif" include <s =: code
 
-"out/id1.pk" load-keypair =: privkey1 =: pubkey1
-"out/id2.pk" load-keypair =: privkey2 =: pubkey2
+"test/out/id1.pk" load-keypair =: privkey1 =: pubkey1
+"test/out/id2.pk" load-keypair =: privkey2 =: pubkey2 cr
 
 <b
     pubkey1 B,
@@ -16,31 +16,30 @@ b> =: storage
 b> =: message
 message hashB privkey1 ed25519_sign =: signature
 
-."Signature: " cr signature Bx. cr
-."Signed: " cr message <s csr. cr
-
 <b
     signature B,
     message <s s,
 b> <s =: in_msg
 
+."Message #1: pubkey2" cr
+."Signature: " cr signature Bx. cr
+."Content: "   cr message <s csr.
+."Result: "    cr in_msg csr. cr
+
 ."Original storage: " cr storage <s csr. cr
-."Original message: " cr in_msg csr. cr
 
-message hashB signature pubkey1 ed25519_chksign x.
+."Checking signature localy: " message hashB signature pubkey1 ed25519_chksign x. cr cr
 
-in_msg code storage runvm
-constant updated_storage
-constant exit_code
+in_msg code storage runvm =: storage =: exit_code cr
+."Result #1: " cr
 ."Exit code " exit_code . cr
-."Updated storage: " cr updated_storage <s csr. cr
+."Updated storage: " cr storage <s csr. cr
 
 
-in_msg code updated_storage runvm
-constant updated_storage2
-constant exit_code2
-."Exit code " exit_code2 . cr
-."Updated storage: " cr updated_storage2 <s csr. cr
+in_msg code storage runvm =: storage =: exit_code cr
+."Result #2: expect failure - pubkey no longer matches" cr
+."Exit code " exit_code . cr
+."Updated storage: " cr storage <s csr. cr
 
 <b
     1 8 u,
@@ -52,10 +51,12 @@ message2 hashu privkey2 ed25519_sign_uint =: signature2
     message2 <s s,
 b> <s =: in_msg2
 
-."Modified message: " cr in_msg2 csr. cr
+."Message #2: pubkey1" cr
+."Signature: " cr signature Bx. cr
+."Content: "   cr message <s csr.
+."Result: "    cr in_msg csr. cr
 
-in_msg2 code updated_storage2 runvm
-constant updated_storage3
-constant exit_code3
-."Exit code " exit_code3 . cr
-."Updated storage: " cr updated_storage3 <s csr. cr
+in_msg2 code storage runvm =: storage =: exit_code cr
+."Result #3: change back to original state" cr
+."Exit code " exit_code . cr
+."Updated storage: " cr storage <s csr. cr
