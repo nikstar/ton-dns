@@ -9,18 +9,20 @@
 "test/out/id2.pk" load-keypair =: privkey2 =: pubkey2 cr
 
 <b
-    pubkey1 B,
+    0 32 u, // seqno
+    pubkey1 B, 
     <b b> ref,
 b> =: storage
 
 <b
-    0 8 u,
+    0 32 u, // seqno
+    0 32 u, // method
     <b 
         <b
             "ru" $, // name
         b> ref,
         <b 
-            42 32 u, // category
+            44 32 u, // category
             pubkey2 B, // content
         b> ref,
     b> ref,
