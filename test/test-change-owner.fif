@@ -9,16 +9,17 @@
 "test/out/id2.pk" load-keypair =: privkey2 =: pubkey2 cr
 
 <b
+    0 32 u,
     pubkey1 B,
     <b b> ref,
 b> =: storage
 
 <b
-    1 8 u,
+    0 32 u, // seqno
+    1 32 u, // op
     pubkey2 B,
 b> =: message
 message hashB privkey1 ed25519_sign =: signature
-
 <b
     signature B,
     message <s s,
@@ -38,28 +39,44 @@ in_msg code storage runvm! =: storage =: exit_code cr
 ."Exit code " exit_code . cr
 ."Updated storage: " cr storage <s csr. cr
 
-
 in_msg code storage runvm! =: storage =: exit_code cr
 ."Result #2: expect failure - pubkey no longer matches" cr
 ."Exit code " exit_code . cr
 ."Updated storage: " cr storage <s csr. cr
 
 <b
-    1 8 u,
+    1 32 u,
+    1 32 u,
     pubkey1 B,
-b> =: message2
-message2 hashu privkey2 ed25519_sign_uint =: signature2
+b> =: message
+message hashu privkey2 ed25519_sign_uint =: signature
 <b
-    signature2 B,
-    message2 <s s,
-b> <s =: in_msg2
+    signature B,
+    message <s s,
+b> <s =: in_msg
 
-."Message #2: pubkey1" cr
+."Message #3: pubkey1" cr
 ."Signature: " cr signature Bx. cr
 ."Content: "   cr message <s csr.
 ."Result: "    cr in_msg csr. cr
 
-in_msg2 code storage runvm! =: storage =: exit_code cr
+in_msg code storage runvm! =: storage =: exit_code cr
 ."Result #3: change back to original state" cr
+."Exit code " exit_code . cr
+."Updated storage: " cr storage <s csr. cr
+
+<b
+    1 32 u, // seqno
+    1 32 u, // op
+    pubkey2 B,
+b> =: message
+message hashB privkey1 ed25519_sign =: signature
+<b
+    signature B,
+    message <s s,
+b> <s =: in_msg
+
+in_msg code storage runvm! =: storage =: exit_code cr
+."Result #4: expect failure - wrong seqno" cr
 ."Exit code " exit_code . cr
 ."Updated storage: " cr storage <s csr. cr

@@ -1,52 +1,78 @@
-;; // Manual DNS smart contract
-;; // 
-;; // 1) Processes external messages signage by the owner (public key storage)
-;; // 2) Register new entries by signage external messages
-;; // 3) Option to change owner
-;; // 4) Responds to dnsresolve
-;; // 
-;; // - no seqno for now
-;; // 
+;; // recv_external -> main 
 
-() main(slice signed_message) impure { 
+;; // Implementation
+
+(int, int, cell) load_storage() impure {
   var storage = get_data().begin_parse();
+  var seqno = storage~load_uint(32);
   var public_key = storage~load_uint(256);
+  var root_dict = storage~load_ref();
+  storage.end_parse();
+  return (seqno, public_key, root_dict);
+}
+
+() set_storage(int seqno, int public_key, cell root_dict) impure {
+    set_data(begin_cell()
+      .store_uint(seqno, 32)
+      .store_uint(public_key, 256)
+      .store_ref(root_dict)
+      .end_cell());
+}
+
+(int, slice) verify_message(slice in_msg, int public_key, int stored_seqno) impure {
+  var signature = in_msg~load_bits(512);
+  throw_unless(32, check_signature(slice_hash(in_msg), signature, public_key));
+  var (seqno, op) = (in_msg~load_uint(32), in_msg~load_int(32));
+  throw_unless(33, seqno == stored_seqno);
+  throw_unless(34, 0 <= op);
+  throw_unless(34, op <= 1); ;; // no && 
+  return (op, in_msg);
+}
+
+cell handle_register(slice message, cell stored_dict) impure {
+  var request = message~load_ref().begin_parse();
+  var key = request~load_ref().begin_parse();
+  var entry = request~load_ref().begin_parse();
+  request.end_parse();
+  var category = entry~load_int(32);
+  var value = entry;
   
-  var (signature, message) = (signed_message~load_bits(512), signed_message);
-  throw_unless(32, check_signature(slice_hash(message), signature, public_key));
+  var d1 = new_dict()
+    .idict_set_ref(32, category, begin_cell().store_slice(value).end_cell());
+  var dict = new_dict()
+    .udict_set_ref(256, slice_hash(key), d1);
+  return dict;  
+}
+
+int handle_change_owner(slice message) impure {
+  var new_public_key = message~load_uint(256);
+  message.end_parse();
+  return new_public_key;
+}
+
+;; // Public API
+
+() main(slice in_msg) impure { 
   
-  var opcode = signed_message~load_uint(8);
-  throw_unless(33, opcode <= 1);
-  
+  var (seqno, public_key, root_dict) = load_storage();
+  var (op, message) = verify_message(in_msg, public_key, seqno);
   accept_message();
 
-  if opcode == 0 { ;; // register
-    var request = message~load_ref().begin_parse();
-    var key = request~load_ref().begin_parse();
-    var entry = request~load_ref().begin_parse();
-    request.end_parse();
-    var category = entry~load_int(32);
-    var value = entry;
-    
-    ;; // var dict = storage~load_dict();
-
-    var d1 = new_dict()
-      .idict_set_ref(32, category, begin_cell().store_slice(value).end_cell());
-    var dict = new_dict()
-      .udict_set_ref(256, slice_hash(key), d1);
-    
-    set_data(begin_cell()
-      .store_uint(public_key, 256)
-      .store_ref(dict)
-      .end_cell());
+  if op == 0 { ;; // register
+    var new_root_dict = handle_register(message, root_dict);
+    set_storage(seqno + 1, public_key, new_root_dict);
   } 
-  
-  if opcode == 1 { ;; // change owner
-    var new_public_key = signed_message~load_uint(256);
-    var dict = storage~load_ref();
-    set_data(begin_cell()
-      .store_uint(new_public_key, 256)
-      .store_ref(dict)
-      .end_cell());
+  if op == 1 { ;; // change owner
+    var new_public_key = handle_change_owner(message);
+    set_storage(seqno + 1, new_public_key, root_dict);
   }
+}
+
+int seqno() method_id {
+  return get_data().begin_parse().preload_uint(32);
+}
+
+(int, cell) dnsresolve(int category, slice query_string) method_id {
+  var root_dict = get_data().begin_parse().skip_bits(32 + 256).preload_ref();
+  return (category, root_dict);
 }
