@@ -11,7 +11,7 @@
 <b
     0 32 u,
     pubkey1 B,
-    <b b> ref,
+    b{0} s,
 b> =: storage
 
 <b

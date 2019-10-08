@@ -17,13 +17,13 @@ $2 =: filename-base
 filename-base +".pk" load-generate-keypair constant private-key constant public-key cr
 
 // construct message
-"build/manual-dns.fif" include =: code
+"manual-dns.fif" include =: code
 code ."code: " cr <s csr. cr 
 
 <b 
   0 32 u,       // seqno
   public-key B, // public key
-  <b b> ref,    // root-dict
+  b{0} s,       // empty root dict
 b> =: data
 data ."data: " cr <s csr. cr 
 
