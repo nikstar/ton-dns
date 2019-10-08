@@ -9,11 +9,9 @@
 { ' usage if } : ?usage
 
 $# 2 <> ?usage
-
-$1 parse-workchain-id constant workchain-id
-$2 constant filename-base
+$1 parse-workchain-id =: workchain-id
+$2 =: filename-base
 ."arguments: workchain-id " workchain-id . .", filename-base: " filename-base type cr cr
-
 
 // load or generate keypair
 filename-base +".pk" load-generate-keypair constant private-key constant public-key cr
@@ -23,8 +21,9 @@ filename-base +".pk" load-generate-keypair constant private-key constant public-
 code ."code: " cr <s csr. cr 
 
 <b 
+  0 32 u,       // seqno
   public-key B, // public key
-  <b b> ref,
+  <b b> ref,    // root-dict
 b> =: data
 data ."data: " cr <s csr. cr 
 
@@ -53,7 +52,6 @@ cr
 signing-message ."signing message: " cr <s csr. cr
 signing-message hashu private-key ed25519_sign_uint =: signature
 
-
 // create external message
 <b 
     b{1000100} s, 
@@ -65,7 +63,6 @@ signing-message hashu private-key ed25519_sign_uint =: signature
     signing-message <s s, 
 b>
 dup ."external message for init:" cr <s csr. cr
-
 
 // save to file
 2 boc+>B dup Bx. cr
