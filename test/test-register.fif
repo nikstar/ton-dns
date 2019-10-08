@@ -21,7 +21,7 @@ b> =: storage
         "ru" $, // name
     b> ref,
     <b 
-        44 32 u, // category
+        44 16 u, // category
         // pubkey2 B, // dns-value
         0 256 u, // dns-value
     b> ref,
