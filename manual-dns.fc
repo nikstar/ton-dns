@@ -1,5 +1,25 @@
 ;; // Manual DNS smart contract
 
+;; // Asm extensions
+
+;; // PFXDICTGETQ (s D n – s' x s'' −1 or s')
+;; // returns (found_prefix_key, found_value, remainder_of_key, found?=-1) or (null, null, key, 0)
+(slice, slice, slice, int) pfxdict_get?(cell dict, int max_key_len, slice key) asm(key dict max_key_len) "PFXDICTGETQ" "NULLROTRIFNOT" "NULLROTRIFNOT";
+
+;; // PFXDICTGET  (s D n – s' x s'' )
+;; // returns (found_prefix_key, found_value, remainder_of_key) or throws deserialization failure exception
+(slice, slice, slice) pfxdict_get!(cell dict, int max_key_len, slice key) asm(key dict max_key_len) "PFXDICTGET";
+
+;; // PFXDICTSET (x k D n – D' −1 or D 0)
+;; // returns (modified_dict, ok?=-1) or (dict, 0)
+(cell, int) pfxdict_set(cell dict, int max_key_len, slice key, slice value) asm(value key dict max_key_len) "PFXDICTSET";
+
+;; // todo remaining methods:
+;; // PFXDICTREPLACE (x k D n – D' −1 or D 0).
+;; // PFXDICTADD (x k D n – D' −1 or D 0).
+;; // PFXDICTDEL (k D n – D' −1 or D 0).
+
+
 ;; // Implementation
 
 (int, int, cell) load_storage() impure {
@@ -30,24 +50,31 @@
 }
 
 cell handle_register(slice message, cell stored_dict) impure {
-  var request = message~load_ref().begin_parse();
-  var key = request~load_ref().begin_parse();
-  var entry = request~load_ref().begin_parse();
-  request.end_parse();
-  var category = entry~load_int(32);
-  var value = entry;
+
+  var name = message~load_ref().begin_parse();
+  var dns_dict = message~load_ref();
+  message.end_parse();
   
-  var d1 = new_dict()
-    .idict_set_ref(32, category, begin_cell().store_slice(value).end_cell());
-  var dict = new_dict()
-    .udict_set_ref(256, slice_hash(key), d1);
-  return dict;  
+  var dict = new_dict(); ;; // fixme! this is wrong
+
+  var ok? = dict~pfxdict_set(1023, name, dns_dict.begin_parse());
+  throw_unless(35, ok?);
+  return dict;
 }
 
 int handle_change_owner(slice message) impure {
   var new_public_key = message~load_uint(256);
   message.end_parse();
   return new_public_key;
+}
+
+(int, cell) handle_dnsresolve(cell root_dict, slice query_string, int category) {
+  var (key, value, rem_query, found?) = pfxdict_get?(root_dict, 1023, query_string);
+    if found? {
+      return (0, begin_cell().store_slice(value).end_cell());
+    } else {
+      return (-1, new_dict()) ;
+    }
 }
 
 ;; // Public API
@@ -75,7 +102,7 @@ int seqno() method_id {
   return get_data().begin_parse().preload_uint(32);
 }
 
-(int, cell) dnsresolve(int category, slice query_string) method_id {
+(int, cell) dnsresolve(slice query_string, int category) method_id {
   var root_dict = get_data().begin_parse().skip_bits(32 + 256).preload_ref();
-  return (category, root_dict);
+  return handle_dnsresolve(root_dict, query_string, category);
 }

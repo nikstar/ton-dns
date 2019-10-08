@@ -10,3 +10,87 @@ Storage:
     - seqno     32 u,
     - pubkey    256 u,
     - root_dict ref, 
+
+Apart from the code of your smart contract, you will need to implement some scripts (usually in Fift) that enable the user to 
+    - create, 
+    - properly configure, 
+    - and control new instances of your smart contract.
+
+Scoring:
+- quality (i.e., its readability and correctness)
+- compactness (i.e., the persistent smart-contract storage consumed by the code and data of your implementation when deployed in the blockchain) 
+- efficiency (i.e., gas consumed during the creation and other actions of the smart contract)
+- earlier submissions
+
+* Simple TON DNS Resolver smart contract with automatic registration of new subdomains (any unregistered subdomain can be automatically registered by sending a message with the new subdomain record carrying a predetermined amount of Grams as payment).
+* Simple TON DNS Resolver smart contract with manual registration of new subdomains (new subdomains are registered whenever an external message correctly signed by the smart contract owner is received).
+
+"dnsresolve" accepts two arguments: 
+    - a 8n-bit Slice containing an n-character string with the subdomain name, or with several subdomain names each followed by a zero byte; and 
+    - a signed 16-bit integer with the "category" to be looked up (or 0, if a dictionary with all "categories" is to be returned), 
+and looks it up in a table stored in the persistent data of the smart contract. 
+
+The output consists of one Integer and one Cell or Null. 
+    - If the subdomain is not found, the smart contract should return (0, null). 
+    - If the subdomain is found, the smart contract should return (8m, dns-record-value), where *m* is one plus the number of bytes in the subdomain found. 
+        - If m is less than the length of the original string, then 8m bits are removed from the beginning of the original string, and the DNS query is repeated for this string using DNS resolver information from dns-record-value, which is a Cell corresponding to value category "-1" (next resolver) regardless of the original category requested. 
+        - Otherwise m is equal to the length of the original string, and dns-record-value is either 
+            - a cell representing (HashmapE 16 ^DNSRecord) (i.e., a dictionary with 16-bit signed integer keys equal to record categories), if the requested category was zero, or just  
+            - a DNSRecord containing the record for the requested category (a Cell or a Null, if there is no record of this category for the requested subdomain).
+
+In most cases, the persistent data of a TON DNS Resolver smart contract contains 
+    - a prefix dictionary 
+        - with keys equal to the defined subdomain names (with terminating zero byte) 
+        - and values equal to a (HashmapE 16 ^DNSRecord), i.e., a fixed-key-length dictionary 
+            - with 16-bit signed integer keys equal to the categories and with 
+            - DNSRecord values. 
+
+An automatic DNS resolver smart contract has 
+    - an extra get-method, which returns the standard payment for registering a new subdomain, the length of this period of time in seconds (e.g., a year), 
+    - and the price paid for each cell and bit of the value stored for the subdomain in addition to the standard method. 
+Whenever a suitable 
+    - internal message (with 32-bit method id equal to a predefined value) arrives, 
+    - the subdomain name and 
+    - the value (i.e., a (HashmapE 16 ^DNSRecord) are extracted from its body, 
+    - and if the message carries enough Grams, 
+    - a new subdomain record is created in the persistent data of the smart contract. 
+If a DNSRecord of category "-2" (owner) is defined in the value for the new record, it contains either the address of the controlling smart contract; in this case, further internal messages from this address may be used to modify the value stored for the subdomain or to extend the registration of the subdomain. 
+A special get-method may be defined to inspect the expiration time of any registered subdomain.
+
+A manual DNS resolver smart contract processes only requests arriving in 
+    - external messages signed by the DNS resolver owner. 
+    - The public key of the owner is stored into the resolver smart contract during its creation, similarly to the simple wallet smart contract. 
+    - However, in contrast to the simple wallet smart contract, there must be a way to change the public key by means of a specially-formed external message signed by the old public key.
+
+4.3.1. TON DNS: 
+    - a map from human-readable domain names to (256-bit) addresses of ADNL network nodes and TON Blockchain accounts and smart contracts.
+    - a hashmap, mapping variable-length null-terminated UTF-8 strings into their “values”
+    - hashmap is implemented as a binary Patricia tree, similar to that described in 2.3.7 but supporting variable-length bitstrings as keys
+    - As to the values, they are “TON DNS records” described by a TL-scheme.
+        - “magic number”, selecting one of the options supported, and then 
+        - either an account identifier, or a smart-contract identifier, or an abstract network address, or a public key used to locate abstract addresses of a service, or a description of an overlay network, and so on
+        - records may also contain 
+            - an expiration time, 
+            - a caching time (usually very large, because updating values in a blockchain too often is expensive), 
+            - and in most cases a reference to the owner of the subdomain in question
+
+4.3.7. Translating a TON DNS domain. 
+Once any full node, acting by itself or on behalf of some light client, can look up entries in the database of any DNS smart contract, arbitrary TON DNS domain names can be recursively translated, starting from the well-known and fixed root DNS smart contract (account) identifier.
+For example, 
+    - if one wants to translate A.B.C, 
+    - one looks up keys .C, .B.C, and A.B.C in the root domain database. 
+    - If the first of them is not found, but the second is, and its value is a reference to another DNS smart contract, 
+    - then A is looked up in the database of that smart contract and the final value is retrieved.
+
+Some Get operations for preﬁx code dictionaries may be found in A.10.11. Other preﬁx code dictionary operations include:
+    • F470 — PFXDICTSET (x k D n – D 0 −1 or D 0).
+    • F471 — PFXDICTREPLACE (x k D n – D 0 −1 or D 0).
+    • F472 — PFXDICTADD (x k D n – D 0 −1 or D 0).
+    • F473 — PFXDICTDEL (k D n – D 0 −1 or D 0).
+These primitives are completely similar to their non-preﬁx code counterparts DICTSET etc (cf. A.10.4), with the obvious diﬀerence that even a Set may fail in a preﬁx code dictionary, so a success ﬂag must be returned by PFXDICTSET as well.
+
+A.10.11. Special Get dictionary and preﬁx code dictionary operations, and constant dictionaries.
+    • F4A6_n — DICTPUSHCONST n ( – D n), pushes a non-empty constant dictionary D (as a Cell ? ) along with its key length 0 ≤ n ≤ 1023, stored as a part of the instruction. The dictionary itself is created from the ﬁrst of remaining references of the current continuation. In this way, the complete DICTPUSHCONST instruction can be obtained by ﬁrst serializing xF4A8_, then the non-empty dictionary itself (one 1 bit and a cell reference), and then the unsigned 10-bit integer n (as if by a STU 10 instruction). An empty dictionary can be pushed by a NEWDICT primitive (cf. A.10.1) instead.
+    !!! 
+    • F4A8 — PFXDICTGETQ (s D n – s' x s'' −1 or s'), looks up the unique preﬁx of Slice s present in the preﬁx code dictionary (cf. 3.4.2) represented by Cell ? D and 0 ≤ n ≤ 1023. If found, the preﬁx of s is returned as s' , and the corresponding value (also a Slice) as x. The remainder of s is returned as a Slice s'' . If no preﬁx of s is a key in preﬁx code dictionary D, returns the unchanged s and a zero ﬂag to indicate failure.
+    • F4A9 — PFXDICTGET  (s D n – s' x s'' ), similar to PFXDICTGET, but throws a cell deserialization failure exception on failure.

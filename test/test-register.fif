@@ -17,14 +17,12 @@ b> =: storage
 <b
     0 32 u, // seqno
     0 32 u, // method
+    <b
+        "ru" $, // name
+    b> ref,
     <b 
-        <b
-            "ru" $, // name
-        b> ref,
-        <b 
-            44 32 u, // category
-            pubkey2 B, // content
-        b> ref,
+        44 32 u, // category
+        pubkey2 B, // dns-value
     b> ref,
 b> =: message
 message hashB privkey1 ed25519_sign =: signature
