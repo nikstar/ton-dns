@@ -26,7 +26,7 @@
   var storage = get_data().begin_parse();
   var seqno = storage~load_uint(32);
   var public_key = storage~load_uint(256);
-  var root_dict = storage~load_ref();
+  var root_dict = storage~load_dict();
   storage.end_parse();
   return (seqno, public_key, root_dict);
 }
@@ -35,7 +35,7 @@
     set_data(begin_cell()
       .store_uint(seqno, 32)
       .store_uint(public_key, 256)
-      .store_ref(root_dict)
+      .store_dict(root_dict)
       .end_cell());
 }
 
@@ -54,9 +54,7 @@ cell handle_register(slice message, cell stored_dict) impure {
   var name = message~load_ref().begin_parse();
   var dns_dict = message~load_ref();
   message.end_parse();
-  
-  var dict = new_dict(); ;; // fixme! this is wrong
-
+  var dict = stored_dict; ;; // fixme! this is wrong
   var ok? = dict~pfxdict_set(1023, name, dns_dict.begin_parse());
   throw_unless(35, ok?);
   return dict;

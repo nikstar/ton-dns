@@ -11,7 +11,7 @@
 <b
     10 32 u, // seqno
     pubkey1 B, 
-    <b b> ref,
+    b{0} s, // empty root dict
 b> =: storage
 
 <b
@@ -21,13 +21,12 @@ b> =: storage
         "ru" $, // name
     b> ref,
     <b 
-        44 16 u, // category
+        42 16 u, // category
         // pubkey2 B, // dns-value
         0 256 u, // dns-value
     b> ref,
 b> =: message
 message hashB privkey1 ed25519_sign =: signature
-
 <b
     signature B,
     message <s s,
@@ -47,22 +46,54 @@ signed-message code storage runvm! =: storage =: exit_code cr
 ."Exit code " exit_code . cr
 ."Updated storage: " cr storage <s csr. cr
 
+<b
+    11 32 u, // seqno
+    0 32 u, // method
+    <b
+        "org" $, // name
+    b> ref,
+    <b 
+        44 16 u, // category
+        // pubkey2 B, // dns-value
+        10 256 u, // dns-value
+    b> ref,
+b> =: message
+message hashB privkey1 ed25519_sign =: signature
+<b
+    signature B,
+    message <s s,
+b> <s =: signed-message
+
+."Message #2: org 44 <pubkey2>" cr
+
+signed-message code storage runvm! =: storage =: exit_code cr
+."Result #2: " cr
+."Exit code " exit_code . cr
+."Updated storage: " cr storage <s csr. cr
+
 ."Testing seqno" cr
 85143 code storage runvm =: storage =: exit_code cr
-."Result #1: " cr
+."Result #3: " cr
 ."Exit code " exit_code . cr
 ."Return values: " .s cr drop
 
 ."Testing dnsresolve ru 0" cr
 "ru" $>s 0 123660 code storage runvm =: storage =: exit_code cr
-."Result #2: " cr
+."Result #4: " cr
 ."Exit code " exit_code . cr
 ."Storage: " cr storage <s csr. cr
-."Return values: " .s ." => " dup null? { ."(null)" } { <s csr. } cond cr drop
+."Return values: " .s ." => " dup null? { ."(null)" drop } { <s csr. } cond cr drop
+
+."Testing dnsresolve com 0" cr
+"org" $>s 0 123660 code storage runvm =: storage =: exit_code cr
+."Result #5: " cr
+."Exit code " exit_code . cr
+."Storage: " cr storage <s csr. cr
+."Return values: " .s ." => " dup null? { ."(null)" drop } { <s csr. } cond cr drop
 
 ."Testing dnsresolve com 0" cr
 "com" $>s 0 123660 code storage runvm =: storage =: exit_code cr
-."Result #3: " cr
+."Result #6: " cr
 ."Exit code " exit_code . cr
 ."Storage: " cr storage <s csr. cr
-."Return values: " .s ." => " dup null? { ."(null)" } { <s csr. } cond cr drop
+."Return values: " .s ." => " dup null? { ."(null)" drop } { <s csr. } cond cr drop
