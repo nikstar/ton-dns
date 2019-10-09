@@ -1,9 +1,9 @@
 "Asm.fif" include
 "TonUtil.fif" include
 
-{ 0 -rot runvm } : runvm!
+{ -1 -rot runvm } : runvm_external
 
-"test-manual-dns.fif" include <s =: code
+"../manual-dns.fif" include <s =: code
 
 "test/out/id1.pk" load-keypair =: privkey1 =: pubkey1
 "test/out/id2.pk" load-keypair =: privkey2 =: pubkey2 cr
@@ -34,12 +34,12 @@ b> <s =: in_msg
 
 ."Checking signature localy: " message hashB signature pubkey1 ed25519_chksign x. cr cr
 
-in_msg code storage runvm! =: storage =: exit_code cr
+in_msg code storage runvm_external =: storage =: exit_code cr
 ."Result #1: " cr
 ."Exit code " exit_code . cr
 ."Updated storage: " cr storage <s csr. cr
 
-in_msg code storage runvm! =: storage =: exit_code cr
+in_msg code storage runvm_external =: storage =: exit_code cr
 ."Result #2: expect failure - pubkey no longer matches" cr
 ."Exit code " exit_code . cr
 ."Updated storage: " cr storage <s csr. cr
@@ -60,7 +60,7 @@ b> <s =: in_msg
 ."Content: "   cr message <s csr.
 ."Result: "    cr in_msg csr. cr
 
-in_msg code storage runvm! =: storage =: exit_code cr
+in_msg code storage runvm_external =: storage =: exit_code cr
 ."Result #3: change back to original state" cr
 ."Exit code " exit_code . cr
 ."Updated storage: " cr storage <s csr. cr
@@ -76,7 +76,7 @@ message hashB privkey1 ed25519_sign =: signature
     message <s s,
 b> <s =: in_msg
 
-in_msg code storage runvm! =: storage =: exit_code cr
+in_msg code storage runvm_external =: storage =: exit_code cr
 ."Result #4: expect failure - wrong seqno" cr
 ."Exit code " exit_code . cr
 ."Updated storage: " cr storage <s csr. cr

@@ -23,7 +23,7 @@ code ."code: " cr <s csr. cr
 <b 
   0 32 u,       // seqno
   public-key B, // public key
-  b{0} s,       // empty root dict
+  null dict,    // empty root dict
 b> =: data
 data ."data: " cr <s csr. cr 
 

@@ -1,3 +1,0 @@
-() main(slice in_msg) impure { 
-  recv_external(in_msg); 
-}
