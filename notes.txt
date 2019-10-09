@@ -83,10 +83,10 @@ For example,
     - then A is looked up in the database of that smart contract and the final value is retrieved.
 
 Some Get operations for preﬁx code dictionaries may be found in A.10.11. Other preﬁx code dictionary operations include:
-    • F470 — PFXDICTSET (x k D n – D 0 −1 or D 0).
-    • F471 — PFXDICTREPLACE (x k D n – D 0 −1 or D 0).
-    • F472 — PFXDICTADD (x k D n – D 0 −1 or D 0).
-    • F473 — PFXDICTDEL (k D n – D 0 −1 or D 0).
+    • F470 — PFXDICTSET (x k D n – D' −1 or D 0).
+    • F471 — PFXDICTREPLACE (x k D n – D' −1 or D 0).
+    • F472 — PFXDICTADD (x k D n – D' −1 or D 0).
+    • F473 — PFXDICTDEL (k D n – D' −1 or D 0).
 These primitives are completely similar to their non-preﬁx code counterparts DICTSET etc (cf. A.10.4), with the obvious diﬀerence that even a Set may fail in a preﬁx code dictionary, so a success ﬂag must be returned by PFXDICTSET as well.
 
 A.10.11. Special Get dictionary and preﬁx code dictionary operations, and constant dictionaries.
@@ -94,3 +94,13 @@ A.10.11. Special Get dictionary and preﬁx code dictionary operations, and cons
     !!! 
     • F4A8 — PFXDICTGETQ (s D n – s' x s'' −1 or s'), looks up the unique preﬁx of Slice s present in the preﬁx code dictionary (cf. 3.4.2) represented by Cell ? D and 0 ≤ n ≤ 1023. If found, the preﬁx of s is returned as s' , and the corresponding value (also a Slice) as x. The remainder of s is returned as a Slice s'' . If no preﬁx of s is a key in preﬁx code dictionary D, returns the unchanged s and a zero ﬂag to indicate failure.
     • F4A9 — PFXDICTGET  (s D n – s' x s'' ), similar to PFXDICTGET, but throws a cell deserialization failure exception on failure.
+
+Пока не забыл: насчет длины - запрашиваем a.b.c, если не вся длина - запрашиваем следующий с -1, ведь мы точно знаем, что это не то 
+или нет....
+
+wallet - id1.pk 
+0:9630430a0853ef29ecbaf0765907e0e4c3e3dcd76291e257c111c8a337e30373 
+Non-bounceable address (for init): 
+0QCWMEMKCFPvKey68HZZB-Dkw-Pc12KR4lfBEcijN-MDc3ON
+Bounceable address (for later access): 
+kQCWMEMKCFPvKey68HZZB-Dkw-Pc12KR4lfBEcijN-MDcy5I

@@ -76,8 +76,9 @@ int handle_change_owner(slice message) impure {
 
 ;; // Public API
 
-;; // () recv_internal(slice in_msg) impure {
-;; // }
+() recv_internal(slice in_msg) impure {
+  ;; // hello
+}
 
 () recv_external(slice in_msg) impure { 
   
