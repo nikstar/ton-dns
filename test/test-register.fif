@@ -5,13 +5,13 @@
 
 "../manual-dns.fif" include <s =: code
 
-"test/out/id1.pk" load-keypair =: privkey1 =: pubkey1
-"test/out/id2.pk" load-keypair =: privkey2 =: pubkey2 cr
+"test/id1.pk" load-generate-keypair =: privkey1 =: pubkey1
+"test/id2.pk" load-generate-keypair =: privkey2 =: pubkey2 cr
 
 <b
     10 32 u, // seqno
     pubkey1 B, 
-    b{0} s, // empty root dict
+    null dict, // empty root dict
 b> =: storage
 
 <b
@@ -30,6 +30,14 @@ message hashB privkey1 ed25519_sign =: signature
     signature B,
     message <s s,
 b> <s =: signed-message
+
+."Testing dnsresolve ru 0" cr
+"ru" $>s 0 123660 code storage runvm =: storage =: exit_code cr
+."Result #0: " cr
+."Exit code " exit_code . cr
+."Storage: " cr storage <s csr. cr
+."Return values: " .s ." => " dup null? { ."(null)" drop } { <s csr. } cond cr drop
+
 
 ."Message #1: ru 42 <pubkey2>" cr
 ."Signature: " cr signature Bx. cr

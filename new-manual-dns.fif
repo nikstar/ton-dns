@@ -48,19 +48,22 @@ wallet_addr filename-base +".addr" save-address-verbose
 cr
 
 // sign
-<b 0 32 u, -1 32 i, b> =: signing-message
-signing-message ."signing message: " cr <s csr. cr
-signing-message hashu private-key ed25519_sign_uint =: signature
+<b 
+  0 32 u,  // seqno
+  -1 32 i, // op=-1 (do nothing)
+b> =: first-message
+first-message ."first message: " cr <s csr. cr
+first-message hashu private-key ed25519_sign_uint =: signature
 
 // create external message
 <b 
-    b{1000100} s, 
-    wallet_addr addr, 
-    b{000010} s, 
-    initial-state <s s, 
-    b{0} s, 
-    signature B, 
-    signing-message <s s, 
+  b{1000100} s, 
+  wallet_addr addr, 
+  b{000010} s, 
+  initial-state <s s, 
+  b{0} s, 
+  signature B, 
+  first-message <s s, 
 b>
 dup ."external message for init:" cr <s csr. cr
 
