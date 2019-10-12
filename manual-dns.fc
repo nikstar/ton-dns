@@ -28,7 +28,6 @@
 }
 
 cell handle_register(slice message, cell stored_dict) impure {
-
   var name = message~load_ref().begin_parse();
   var dns_dict = message~load_ref();
   message.end_parse();
@@ -44,30 +43,33 @@ int handle_change_owner(slice message) impure {
 }
 
 (int, cell) handle_dnsresolve(cell root_dict, slice query, int category) {
+  dump_stack();
   var (key, value, rem_query, found?) = pfxdict_get?(root_dict, 1023, query);
   if found? {
     var dict = begin_cell().store_slice(value).end_cell();
     var key_bits = key.slice_bits();
     if key_bits == query.slice_bits() { ;; // successfully fetched target item
       if category == 0 { ;; // return entire dict
-        return (key_bits / 8, begin_cell().store_slice(value).end_cell());
+        ;; // return (key_bits / 8, begin_cell().store_slice(value).end_cell());
+        return (11, begin_cell().store_slice(value).end_cell());
       } else { ;; // fetch requested category
         (var category_value, found?) = idict_get?(dict, 16, category);
         if found? {
-          return (key_bits / 8, begin_cell().store_slice(category_value).end_cell());
+          ;; // return (key_bits / 8, begin_cell().store_slice(category_value).end_cell());
+          return (22, begin_cell().store_slice(category_value).end_cell());
         } else {
           ;; // return (key_bits / 8, new_dict()); 
-          return (-2, new_dict()); // fixme
+          return (-2, new_dict()); ;; // fixme
         }
       }
     } else { ;; // returning intermidiate item category=-1
       (var category_value, found?) = idict_get?(dict, 16, -1);
       if found? {
         ;; // return (key_bits / 8, begin_cell().store_slice(category_value).end_cell());
-        return (-3, begin_cell().store_slice(category_value).end_cell()); // fixme
+        return (-3, begin_cell().store_slice(category_value).end_cell()); ;; // fixme
       } else {
         ;; // return (key_bits / 8, new_dict());
-        return (-4, new_dict()); // fixme
+        return (-4, new_dict()); ;; // fixme
       }
     }
   } else {

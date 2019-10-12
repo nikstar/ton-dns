@@ -5,75 +5,46 @@
 
 "../manual-dns.fif" include <s =: code
 
-"test/id1.pk" load-generate-keypair =: privkey1 =: pubkey1
-"test/id2.pk" load-generate-keypair =: privkey2 =: pubkey2 cr
+1 =: seqno 
+"test/id1.pk" load-generate-keypair =: privkey1 =: pubkey1 cr
 
 <b
-    10 32 u, // seqno
+    seqno 32 u,
     pubkey1 B, 
     null dict, // empty root dict
 b> =: storage
 
-<b
-    10 32 u, // seqno
-    0 32 u, // method
+{
+  <b
+    swap 32 u, // seqno
+    0 32 u,    // method
     <b
-        "ru" $, // name
+      rot $,   // name
     b> ref,
-    <b 
-        42 16 u, // category
-        42 256 u, // dns-value
-    b> ref,
-b> =: message
-message hashB privkey1 ed25519_sign =: signature
-<b
-    signature B,
-    message <s s,
-b> <s =: signed-message
+    swap ref,  // dict
+  b>
+  tuck hashB swap ed25519_sign
+  <b
+    swap B,    // signature
+    swap <s s, // message
+  b> <s
+} : make-message // private-key dns-dict name seqno - signed-message-slice
 
-."Testing dnsresolve ru 0" cr
-"ru" $>s 0 123660 code storage runvm =: storage =: exit_code cr
-."Result #0: " cr
-."Exit code " exit_code . cr
-."Storage: " cr storage <s csr. cr
-."Return values: " .s ." => " dup null? { ."(null)" drop } { <s csr. } cond cr drop
+// creating message
+
+<b 0xAA 256 u, 1 dictnew   16 b>idict! .s drop .s
+<b 0xBB 256 u, swap 2 swap 16 b>idict! .s drop .s
+<b 0xCC 256 u, swap 3 swap 16 b>idict! .s drop .s =: dict
+
+privkey1 dict "ru" seqno make-message =: signed-message
 
 
-."Message #1: ru 42 <pubkey2>" cr
-."Signature: " cr signature Bx. cr
-."Content: "   cr message <s csr.
-."Result: "    cr signed-message csr. cr
+."Original storage: " cr cr storage <s csr. cr
 
-."Original storage: " cr storage <s csr. cr
-
-."Checking signature localy: " message hashB signature pubkey1 ed25519_chksign x. cr cr
+."Message: ru" cr cr signed-message csr. cr
 
 signed-message code storage runvm_external =: storage =: exit_code cr
 ."Result #1: " cr
-."Exit code " exit_code . cr
-."Updated storage: " cr storage <s csr. cr
-
-<b
-    11 32 u, // seqno
-    0 32 u, // method
-    <b
-        "org" $, // name
-    b> ref,
-    <b 
-        44 16 u, // category
-        10 256 u, // dns-value
-    b> ref,
-b> =: message
-message hashB privkey1 ed25519_sign =: signature
-<b
-    signature B,
-    message <s s,
-b> <s =: signed-message
-
-."Message #2: org 44 <pubkey2>" cr
-
-signed-message code storage runvm_external =: storage =: exit_code cr
-."Result #2: " cr
 ."Exit code " exit_code . cr
 ."Updated storage: " cr storage <s csr. cr
 
@@ -83,23 +54,19 @@ signed-message code storage runvm_external =: storage =: exit_code cr
 ."Exit code " exit_code . cr
 ."Return values: " .s cr drop
 
-."Testing dnsresolve ru 0" cr
-"ru" $>s 0 123660 code storage runvm =: storage =: exit_code cr
-."Result #4: " cr
-."Exit code " exit_code . cr
-."Storage: " cr storage <s csr. cr
-."Return values: " .s ." => " dup null? { ."(null)" drop } { <s csr. } cond cr drop
+{
+  2dup swap ."Testing dnsresolve " type space . cr
+  swap $>s swap 123660 code storage runvm cr
+  ."Result: " cr
+  ."Exit code " drop . cr
+  ."Return values: " .s cr nip
+  ." => " dup null? { ."(null)" drop } { <s csr. } cond cr
+} : dnsresolve // name category -
 
-."Testing dnsresolve com 0" cr
-"org" $>s 0 123660 code storage runvm =: storage =: exit_code cr
-."Result #5: " cr
-."Exit code " exit_code . cr
-."Storage: " cr storage <s csr. cr
-."Return values: " .s ." => " dup null? { ."(null)" drop } { <s csr. } cond cr drop
+"ru" 1 dnsresolve
+"ru" 2 dnsresolve
+"ru" 0 dnsresolve
+"ru.yandex" 0 dnsresolve
+"org" 1 dnsresolve
 
-."Testing dnsresolve com 0" cr
-"com" $>s 0 123660 code storage runvm =: storage =: exit_code cr
-."Result #6: " cr
-."Exit code " exit_code . cr
-."Storage: " cr storage <s csr. cr
-."Return values: " .s ." => " dup null? { ."(null)" drop } { <s csr. } cond cr drop
+
