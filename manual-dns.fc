@@ -43,7 +43,7 @@
   var (seqno, op) = (in_msg~load_uint(32), in_msg~load_int(32));
   throw_unless(33, seqno == stored_seqno);
   throw_unless(34, -1 <= op);
-  throw_unless(34, op <= 1); ;; // no && 
+  throw_unless(34, op <= 1); ;; // no &&?
   return (op, in_msg);
 }
 
@@ -63,13 +63,36 @@ int handle_change_owner(slice message) impure {
   return new_public_key;
 }
 
-(int, cell) handle_dnsresolve(cell root_dict, slice query_string, int category) {
-  var (key, value, rem_query, found?) = pfxdict_get?(root_dict, 1023, query_string);
-    if found? {
-      return (0, begin_cell().store_slice(value).end_cell());
-    } else {
-      return (-1, new_dict()) ;
+(int, cell) handle_dnsresolve(cell root_dict, slice query, int category) {
+  var (key, value, rem_query, found?) = pfxdict_get?(root_dict, 1023, query);
+  if found? {
+    var dict = begin_cell().store_slice(value).end_cell();
+    var key_bits = key.slice_bits();
+    if key_bits == query.slice_bits() { ;; // successfully fetched target item
+      if category == 0 { ;; // return entire dict
+        return (key_bits / 8, begin_cell().store_slice(value).end_cell());
+      } else { ;; // fetch requested category
+        (var category_value, found?) = idict_get?(dict, 16, category);
+        if found? {
+          return (key_bits / 8, begin_cell().store_slice(category_value).end_cell());
+        } else {
+          ;; // return (key_bits / 8, new_dict()); 
+          return (-2, new_dict()); // fixme
+        }
+      }
+    } else { ;; // returning intermidiate item category=-1
+      (var category_value, found?) = idict_get?(dict, 16, -1);
+      if found? {
+        ;; // return (key_bits / 8, begin_cell().store_slice(category_value).end_cell());
+        return (-3, begin_cell().store_slice(category_value).end_cell()); // fixme
+      } else {
+        ;; // return (key_bits / 8, new_dict());
+        return (-4, new_dict()); // fixme
+      }
     }
+  } else {
+    return (-1, new_dict()) ;
+  }
 }
 
 ;; // Public API
@@ -83,17 +106,13 @@ int handle_change_owner(slice message) impure {
   var (op, message) = verify_message(in_msg, public_key, seqno);
   accept_message();
 
-  if op == -1 { ;; // init; do nothing
-    set_storage(seqno + 1, public_key, root_dict);
-  }
   if op == 0 { ;; // register
-    var new_root_dict = handle_register(message, root_dict);
-    set_storage(seqno + 1, public_key, new_root_dict);
+    root_dict = handle_register(message, root_dict);
   } 
   if op == 1 { ;; // change owner
-    var new_public_key = handle_change_owner(message);
-    set_storage(seqno + 1, new_public_key, root_dict);
+    public_key = handle_change_owner(message);
   }
+  set_storage(seqno + 1, public_key, root_dict);
 }
 
 int seqno() method_id {
