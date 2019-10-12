@@ -3,11 +3,12 @@
 
 { ."usage: " @' $0 type ." <smc-address> <old-key> <new-pulic-key> <seqno> [<savefile>]" cr
   ."Creates change owner request for Manual DNS smart contract" cr
-  ."<smc-address>    contract address will be loaded from <smc-address>.addr" cr
-  ."<old-key>        current private key will be loaded from <old-key>.pk" cr
-  ."<new-public-key> new PUBLIC key will be loaded from here" cr
+  ."<smc-address>    [*.addr] contract address" cr
+  ."<old-key>        [*.pk] current private key" cr
+  ."<new-public-key> [*.pub] new PUBLIC key" cr
   ."<seqno>          current seqno" cr
-  ."<savefile>       will output to <savefile>.boc (default 'change-owner.boc')" cr
+  ."<savefile>       [*.boc] output file (default 'change-owner.boc')" cr cr
+  ."Public key can be obtained using `fift -s pub.fif mykey.pk`, or using priv>pub in Fift script. Make sure you check everything twice because current private key will stop working after smart contract processes this message." cr
   1 halt
 } : usage
 { ' usage if } : ?usage
@@ -22,17 +23,16 @@ $# 5 > ?usage
 $1 load-address 2=: smc-address
 ."Smart contract address = " smc-address 2dup .addr cr 6 .Addr cr
 
-$2 +".pk" load-keypair nip =: private-key
+$2 load-keypair nip =: private-key
 
 $3 load-public-key =: new-public-key
-
 cr 
 ."Will change owner to public key " new-public-key Bx. cr 
 ."Make sure this is correct - current private key will no longer work!" cr cr
 
 $4 parse-int =: seqno
 
-def? $5 { @' $5 } { "change-owner" } cond +".boc" =: savefile
+def? $5 { @' $5 } { "change-owner.boc" } cond =: savefile
 
 <b
   seqno 32 u,
