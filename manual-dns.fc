@@ -2,14 +2,14 @@
 
 ;; // Implementation
 
-(int, int, cell) load_storage() impure {
+(int, int, cell) load_storage() impure inline {
   var s = get_data().begin_parse();
   var (seqno, public_key, root_dict) = (s~load_uint(32), s~load_uint(256), s~load_dict());
   s.end_parse();
   return (seqno, public_key, root_dict);
 }
 
-() set_storage(int seqno, int public_key, cell root_dict) impure {
+() set_storage(int seqno, int public_key, cell root_dict) impure inline {
     set_data(begin_cell()
       .store_uint(seqno, 32)
       .store_uint(public_key, 256)
@@ -17,7 +17,7 @@
       .end_cell());
 }
 
-(int, slice) verify_message(slice in_msg, int public_key, int stored_seqno) impure {
+(int, slice) verify_message(slice in_msg, int public_key, int stored_seqno) impure inline {
   var signature = in_msg~load_bits(512);
   throw_unless(32, check_signature(slice_hash(in_msg), signature, public_key));
   var (seqno, op) = (in_msg~load_uint(32), in_msg~load_int(32));
@@ -27,7 +27,7 @@
   return (op, in_msg);
 }
 
-cell handle_register(slice message, cell stored_dict) impure {
+cell handle_register(slice message, cell stored_dict) impure inline {
   var name = message~load_ref().begin_parse();
   var dns_dict = message~load_ref();
   message.end_parse();
@@ -36,24 +36,24 @@ cell handle_register(slice message, cell stored_dict) impure {
   return stored_dict;
 }
 
-int handle_change_owner(slice message) impure {
+int handle_change_owner(slice message) impure inline {
   var new_public_key = message~load_uint(256);
   message.end_parse();
   return new_public_key;
 }
 
-(int, cell) handle_dnsresolve(cell root_dict, slice query, int category) {
-  var (key, value, rem_query, found?) = pfxdict_get?(root_dict, 1023, query);
+(int, cell) handle_dnsresolve(cell root_dict, slice query, int category) inline {
+  var (key, value, rem, found?) = root_dict.pfxdict_get?(1023, query);
   if found? {
     var dict = value.to_cell();
     var key_bits = key.slice_bits();
     var ok? = key_bits == query.slice_bits();
-    if ok? == 0 { ok? = rem_query.preload_int(8) == 0; } ;;// zero-terminated case
+    if ok? == 0 { ok? = rem.preload_int(8) == 0; } ;;// zero-terminated case
     if ok? { ;;// successfully fetched target item
       if category == 0 { ;;// return entire dict
         return (key_bits / 8, dict);
       } else { ;;// fetch requested category
-        (var category_value, found?) = idict_get?(dict, 16, category);
+        (var category_value, found?) = dict.idict_get?(16, category);
         if found? {
           return (key_bits / 8, category_value.to_cell());
         } else {
