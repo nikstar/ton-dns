@@ -46,23 +46,23 @@ int handle_change_owner(slice message) impure {
   dump_stack();
   var (key, value, rem_query, found?) = pfxdict_get?(root_dict, 1023, query);
   if found? {
-    var dict = begin_cell().store_slice(value).end_cell();
+    var dict = value.to_cell();
     var key_bits = key.slice_bits();
-    if key_bits == query.slice_bits() { ;; // successfully fetched target item
-      if category == 0 { ;; // return entire dict
-        return (key_bits / 8, begin_cell().store_slice(value).end_cell());
-      } else { ;; // fetch requested category
+    if key_bits == query.slice_bits() { ;;// successfully fetched target item
+      if category == 0 { ;;// return entire dict
+        return (key_bits / 8, dict);
+      } else { ;;// fetch requested category
         (var category_value, found?) = idict_get?(dict, 16, category);
         if found? {
-          return (key_bits / 8, begin_cell().store_slice(category_value).end_cell());
+          return (key_bits / 8, category_value.to_cell());
         } else {
           return (key_bits / 8, new_dict()); 
         }
       }
-    } else { ;; // returning intermidiate item category=-1
+    } else { ;;// returning intermidiate item category=-1
       (var category_value, found?) = idict_get?(dict, 16, -1);
       if found? {
-        return (key_bits / 8, begin_cell().store_slice(category_value).end_cell());
+        return (key_bits / 8, category_value.to_cell());
       } else {
         return (-1, new_dict()); ;;// no redirect data
       }

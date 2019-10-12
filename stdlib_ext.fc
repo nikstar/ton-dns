@@ -1,3 +1,9 @@
+
+
+;;// Equivalent to begin_cell().store_slice(s).end_cell()
+cell to_cell(slice s) 
+    asm "NEWC" "SWAP" "STSLICER" "ENDC";
+
 ;; // PFXDICTGETQ (s D n – s' x s'' −1 or s')
 ;; // returns (found_prefix_key, found_value, remainder_of_key, found?=-1) or (null, null, key, 0)
 (slice, slice, slice, int) pfxdict_get?(cell dict, int max_key_len, slice key) 
