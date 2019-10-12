@@ -5,6 +5,7 @@
 // parse arguments
 { ."usage: " @' $0 type ." <workchain-id> <filename-base>" cr
   ."Creates a new manual DNS in specified workchain, with private key saved to or loaded from <filename-base>.pk" cr
+  1 halt
 } : usage
 { ' usage if } : ?usage
 
@@ -30,10 +31,10 @@ data ."data: " cr <s csr. cr
 null =: libraries
 
 <b 
-    b{0011} s, 
-    code ref, 
-    data ref, 
-    libraries dict, 
+  b{0011} s, 
+  code ref, 
+  data ref, 
+  libraries dict, 
 b>  =: initial-state
 initial-state ."initial state: " cr <s csr. cr 
 

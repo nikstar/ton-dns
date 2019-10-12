@@ -5,8 +5,8 @@
 
 "../manual-dns.fif" include <s =: code
 
-"test/out/id1.pk" load-keypair =: privkey1 =: pubkey1
-"test/out/id2.pk" load-keypair =: privkey2 =: pubkey2 cr
+"id1.pk" load-generate-keypair =: privkey1 =: pubkey1
+"id2.pk" load-generate-keypair =: privkey2 =: pubkey2 cr
 
 <b
     0 32 u,

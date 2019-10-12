@@ -2,3 +2,5 @@ build
 *.addr
 *.boc
 *.pk
+*.pub
+wallet/

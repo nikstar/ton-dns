@@ -1,0 +1,15 @@
+"Asm.fif" include
+"TonUtil.fif" include
+
+{ ."usage: " @' $0 type ." <filename-base>" cr
+  ."Loads (or generates) private key from <filename-base>.pk and stores public key in <filename-base>.pub" cr
+  1 halt
+} : usage
+{ ' usage if } : ?usage
+
+$# 1 <> ?usage
+$1 =: base
+base +".pk" load-generate-keypair drop
+dup ."Public key: " Bx. cr
+base +".pub" tuck B>file
+."Saved to file: " type cr

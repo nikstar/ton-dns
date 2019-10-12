@@ -14,7 +14,7 @@
     null dict, // empty root dict
 b> =: storage
 
-{
+{ // make-message
   <b
     swap 32 u, // seqno
     0 32 u,    // method
@@ -33,7 +33,8 @@ b> =: storage
 // creating message
 <b 0xAA 256 u, 1 dictnew   16 b>idict! drop // we know this succeeds
 <b 0xBB 256 u, swap 2 swap 16 b>idict! drop
-<b 0xCC 256 u, swap 3 swap 16 b>idict! drop =: dict
+<b 0xCC 256 u, swap 3 swap 16 b>idict! drop
+<b 0xDD 256 u, swap -1 swap 16 b>idict! drop =: dict
 
 privkey1 dict "ru" seqno make-message =: signed-message
 

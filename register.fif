@@ -7,6 +7,11 @@
 } : usage
 { ' usage if } : ?usage
 
+{ (number) 1- abort"workchain id must be an integer"
+  dup 16 fits not abort"category id must fit in 16 bits"
+} : parse-category
+
+
 $# 6 <> ?usage
 
 true constant bounce

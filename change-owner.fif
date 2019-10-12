@@ -1,0 +1,57 @@
+"Asm.fif" include
+"TonUtil.fif" include
+
+{ ."usage: " @' $0 type ." <smc-address> <old-key> <new-pulic-key> <seqno> [<savefile>]" cr
+  ."Creates change owner request for Manual DNS smart contract" cr
+  ."<smc-address>    contract address will be loaded from <smc-address>.addr" cr
+  ."<old-key>        current private key will be loaded from <old-key>.pk" cr
+  ."<new-public-key> new PUBLIC key will be loaded from here" cr
+  ."<seqno>          current seqno" cr
+  ."<savefile>       will output to <savefile>.boc (default 'change-owner.boc')" cr
+  1 halt
+} : usage
+{ ' usage if } : ?usage
+
+{ dup ."Loading public key from file " type cr 
+  file>B dup Blen 32 <> abort"Public key must be exactly 32 bytes long"
+} : load-public-key
+
+$# 4 < ?usage
+$# 5 > ?usage
+
+$1 load-address 2=: smc-address
+."Smart contract address = " smc-address 2dup .addr cr 6 .Addr cr
+
+$2 +".pk" load-keypair nip =: private-key
+
+$3 load-public-key =: new-public-key
+
+cr 
+."Will change owner to public key " new-public-key Bx. cr 
+."Make sure this is correct - current private key will no longer work!" cr cr
+
+$4 parse-int =: seqno
+
+def? $5 { @' $5 } { "change-owner" } cond +".boc" =: savefile
+
+<b
+  seqno 32 u,
+  1 32 u, // op=1 (change owner)
+  new-public-key B,
+b> =: message
+message hashB private-key ed25519_sign =: signature
+<b 
+  b{1000100} s, 
+  smc-address addr, 
+  0 Gram, 
+  b{01} s,
+  <b
+    signature B,
+    message <s s,
+  b> ref,
+b>
+."Content: "   cr message <s csr.
+dup ."Resulting external message: " cr <s csr. cr
+2 boc+>B dup Bx. cr
+savefile tuck B>file
+."Saved external message to file: " type cr
