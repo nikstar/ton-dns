@@ -55,7 +55,7 @@ signed-message code storage runvm_external =: storage =: exit_code cr
 ."Return values: " .s cr drop
 
 {
-  2dup swap ."Testing dnsresolve " type space . cr
+  // 2dup swap ."Testing dnsresolve " type space . cr
   swap $>s swap 123660 code storage runvm cr
   ."Result: " cr
   ."Exit code " drop . cr
@@ -68,5 +68,5 @@ signed-message code storage runvm_external =: storage =: exit_code cr
 "ru" 0 dnsresolve
 "ru.yandex" 0 dnsresolve
 "org" 1 dnsresolve
-
+<b "ru" $, 0 8 u, "org" $, b> <s 3 dnsresolve
 
