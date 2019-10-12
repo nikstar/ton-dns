@@ -1,25 +1,5 @@
 ;; // Manual DNS smart contract
 
-;; // Asm extensions
-
-;; // PFXDICTGETQ (s D n – s' x s'' −1 or s')
-;; // returns (found_prefix_key, found_value, remainder_of_key, found?=-1) or (null, null, key, 0)
-(slice, slice, slice, int) pfxdict_get?(cell dict, int max_key_len, slice key) asm(key dict max_key_len) "PFXDICTGETQ" "NULLROTRIFNOT" "NULLROTRIFNOT";
-
-;; // PFXDICTGET  (s D n – s' x s'' )
-;; // returns (found_prefix_key, found_value, remainder_of_key) or throws deserialization failure exception
-(slice, slice, slice) pfxdict_get!(cell dict, int max_key_len, slice key) asm(key dict max_key_len) "PFXDICTGET";
-
-;; // PFXDICTSET (x k D n – D' −1 or D 0)
-;; // returns (modified_dict, ok?=-1) or (dict, 0)
-(cell, int) pfxdict_set(cell dict, int max_key_len, slice key, slice value) asm(value key dict max_key_len) "PFXDICTSET";
-
-;; // todo remaining methods:
-;; // PFXDICTREPLACE (x k D n – D' −1 or D 0).
-;; // PFXDICTADD (x k D n – D' −1 or D 0).
-;; // PFXDICTDEL (k D n – D' −1 or D 0).
-
-
 ;; // Implementation
 
 (int, int, cell) load_storage() impure {
