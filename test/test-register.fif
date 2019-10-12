@@ -31,13 +31,11 @@ b> =: storage
 } : make-message // private-key dns-dict name seqno - signed-message-slice
 
 // creating message
-
-<b 0xAA 256 u, 1 dictnew   16 b>idict! .s drop .s
-<b 0xBB 256 u, swap 2 swap 16 b>idict! .s drop .s
-<b 0xCC 256 u, swap 3 swap 16 b>idict! .s drop .s =: dict
+<b 0xAA 256 u, 1 dictnew   16 b>idict! drop // we know this succeeds
+<b 0xBB 256 u, swap 2 swap 16 b>idict! drop
+<b 0xCC 256 u, swap 3 swap 16 b>idict! drop =: dict
 
 privkey1 dict "ru" seqno make-message =: signed-message
-
 
 ."Original storage: " cr cr storage <s csr. cr
 

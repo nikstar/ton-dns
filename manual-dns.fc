@@ -43,12 +43,13 @@ int handle_change_owner(slice message) impure {
 }
 
 (int, cell) handle_dnsresolve(cell root_dict, slice query, int category) {
-  dump_stack();
   var (key, value, rem_query, found?) = pfxdict_get?(root_dict, 1023, query);
   if found? {
     var dict = value.to_cell();
     var key_bits = key.slice_bits();
-    if key_bits == query.slice_bits() { ;;// successfully fetched target item
+    var ok? = key_bits == query.slice_bits();
+    if ok? == 0 { ok? = rem_query.preload_int(8) == 0; } ;;// zero-terminated case
+    if ok? { ;;// successfully fetched target item
       if category == 0 { ;;// return entire dict
         return (key_bits / 8, dict);
       } else { ;;// fetch requested category
@@ -68,7 +69,7 @@ int handle_change_owner(slice message) impure {
       }
     }
   } else {
-    return (-1, new_dict()) ;
+    return (-1, new_dict());
   }
 }
 
