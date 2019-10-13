@@ -1,3 +1,6 @@
-ENTRY 1 QUFBQUFBQUFBQUFBQUEK
-ENTRY 2 QkJCQkJCQkJCQkJCQkIK
-
+-2 => file out/id1.pub
+-1 => address kQCnvV61wU5cLVghtZGlgGs_uS-Kzhgc1wp3K-3pyxH7z6xv
+ 1 => text Hello darkness, my old friend
+ 2 => base64 SSd2ZSBjb21lIHRvIHRhbGsgd2l0aCB5b3UgYWdhaW4K
+ 3 => base64url QmVjYXVzZSBhIHZpc2lvbiBzb2Z0bHkgY3JlZXBpbmc=
+ 4 => hex 4c65667420697473207365656473207768696c6520492077617320736c656570696e670a

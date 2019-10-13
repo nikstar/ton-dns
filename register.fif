@@ -25,30 +25,39 @@ $4 =: entries-file
 $5 parse-int =: seqno
 def? $6 { @' $6 } { "register.boc" } cond =: savefile
 
+// B - s
+{ <b swap B, b> <s } : B>s
+// wc addr - B
+{ 
+  <b 
+    rot 32 i,
+    swap 256 u,
+  b> <s
+} : smca>s
+
+// predefined entry types - more can be added
+{ 0 word parse-smc-addr drop smca>s } : address
+{ 0 word file>B B>s } : file 
+{ 0 word base64>B B>s } : base64
+{ 0 word base64url>B B>s } : base64url
+{ 0 word $>B B>s } : text
+{ 0 word x>B B>s } : hex
+
 // string - cat
 { 
-  ."category " dup type cr
-  (number) 1- abort"category must be an integer"
   dup 16 fits not abort"category must fit in 16 bits"
 } : parse-category
-// string - s
-{
-  ."entry " dup type cr
-  base64url>B
-  <b swap B, b> <s
-} : parse-base64url-value
 // D cat val – D'
 {
-  .s
-  swap rot 16 
-  .s
-  idict!
-  .s 1+ abort"failed to add entry to dictionary" // note: this ignores potential errors
-  .s
+  swap rot 16  idict! 1+ abort"failed to add entry to dictionary"
 } : add-entry
-{
-  bl word parse-category bl word parse-base64url-value add-entry
-} : ENTRY
+
+// D category '=>' <entry-type> <string> - D'
+{ 
+  parse-category  
+  bl word find not abort"`=>` must be followed by entry type" 1 swap (execute) 
+  add-entry 
+} : =>
 
 dictnew
 entries-file include 
