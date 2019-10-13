@@ -2,7 +2,7 @@
 
 This project implements **manual DNS** smart contact, along with scripts needed to register subdomains and change smart contract ownership. 
 
-DNS values are parsed from specially formatted text files which lets user store text or binary data. This submission includes scripts for generating public keys and local testing.
+DNS values are parsed from specially formatted text files which let user store text or binary data. This submission includes scripts for generating public keys and local testing.
 
 Feel free to [get in touch](https://t.me/nikstar). This project is hosted [on Github](https://github.com/nikstar/ton-dns), I will make it public after submission deadline.
 
@@ -14,7 +14,7 @@ Feel free to [get in touch](https://t.me/nikstar). This project is hosted [on Gi
     func -PS -o manual-dns.fif stdlib.fc stdlib_ext.fc manual-dns.fc
     ```
 
-    [manual-dns.fc]() includes smc code and [stdlib_ext.fc]() includes some asm extensions.
+    [manual-dns.fc](manual-dns.fc) includes smc code and [stdlib_ext.fc](stdlib_ext.fc) includes some asm extensions.
 
     Note that `manual-dns.fif` is already checked in this repo, so this step can be skipped.
 
@@ -30,7 +30,7 @@ Feel free to [get in touch](https://t.me/nikstar). This project is hosted [on Gi
 
 ## Registering new subdomain
 
-New subdomains can be registered using [register.fif]():
+New subdomains can be registered using [register.fif](register.fif):
 
 ```bash
 fift -s register.fif files/id1.addr out/id1.pk "ru" files/entries.txt 3 files/reg1.boc
@@ -51,22 +51,23 @@ In this example DNS values are parsed from following text file:
 
 As you can see, values can be provided in any desired format: imported from file or provided directly as text or encoded data.
 
-This format can be easily extended for further convenience once more details of DNS are nailed down. For example, aliases for predefined categories can be used: `-2 constant OWNER`, `1 constant CNAME` and so on. See [register.fif]() for implementation details.
+This format can be easily extended for further convenience once more details of DNS are nailed down. For example, aliases for predefined categories can be used: `-2 constant OWNER`, `1 constant CNAME` and so on. See [register.fif](register.fif) for implementation details.
 
 ## Dnsresolve
 
 Dnsresolve get-method has been implemented according to spec. In this example
-    - `dnsresolve "ru" 0` returns (2, dictionary from category to dns-value),
-    - `dnsresolve "ru" 1` returns (2, dns-value),
-    - `dnsresolve "ru" 42` returns (-1, null),
-    - `dnsresolve "ru.yandex" 0` returns (2, dns-value for category=-1) (if category=-1 is not set, returns (-1, null)),
-    - `dnsresolve "org" 0` returns (-1, null).
+
+- `dnsresolve "ru" 0` returns (2, dictionary from category to dns-value),
+- `dnsresolve "ru" 1` returns (2, dns-value),
+- `dnsresolve "ru" 42` returns (-1, null),
+- `dnsresolve "ru.yandex" 0` returns (2, dns-value for category=-1) (if category=-1 is not set, returns (-1, null)),
+- `dnsresolve "org" 0` returns (-1, null).
 
 One thing I was not clear about is handling string with multiple subdomain names, e.g. `ru\0org\0`. I opted to return value for the first subdomain (`ru` in this case) and ignore the rest of the string. If smc is expected to return values for *any* of the names provided, it is unclear what to return as the first value (number of bytes consumed).
 
 ## Changing ownership
 
-Owner (i.e. public key stored in smc persistent storage) can be changed using [change-owner.fif]():
+Owner (i.e. public key stored in smc persistent storage) can be changed using [change-owner.fif](change-owner.fif):
 
 ```bash
 fift -s change-owner.fif files/id1.addr files/id1 files/id2.pub 1 files/change12
