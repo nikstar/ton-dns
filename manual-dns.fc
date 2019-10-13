@@ -94,7 +94,7 @@ int handle_change_owner(slice message) impure inline {
         if found? {
           return (key_bits / 8, category_value.to_cell());
         } else {
-          return (-1, new_dict()); 
+          return not_found(); 
         }
       }
     } else { ;;// returning intermidiate item category=-1
@@ -102,10 +102,10 @@ int handle_change_owner(slice message) impure inline {
       if found? {
         return (key_bits / 8, category_value.to_cell());
       } else {
-        return (-1, new_dict()); ;;// no redirect data
+        return not_found(); ;;// no redirect data
       }
     }
   } else {
-    return (-1, new_dict());
+    return not_found();
   }
 }
