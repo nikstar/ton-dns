@@ -1,7 +1,7 @@
 "Asm.fif" include
 "TonUtil.fif" include
 
-{ ."usage: " @' $0 type ." <smc-address> <old-key> <new-pulic-key> <seqno> [<savefile>]" cr
+{ ."usage: " @' $0 type ." <smc-address> <old-key> <new-public-key> <seqno> [<savefile>]" cr
   ."Creates change owner request for Manual DNS smart contract" cr
   ."<smc-address>    [*.addr] contract address" cr
   ."<old-key>        [*.pk] current private key" cr
