@@ -1,6 +1,43 @@
-;; // Manual DNS smart contract
+;;// Manual DNS smart contract
 
-;; // Implementation
+;;// Forward declarations
+(int, int, cell) load_storage() impure inline;
+() set_storage(int seqno, int public_key, cell root_dict) impure inline;
+(int, slice) verify_message(slice in_msg, int public_key, int stored_seqno) impure inline;
+cell handle_register(slice message, cell stored_dict) impure inline;
+int handle_change_owner(slice message) impure inline;
+(int, cell) handle_dnsresolve(cell root_dict, slice query, int category) inline;
+
+
+;;// Public API
+() recv_internal(slice in_msg) impure {
+}
+
+() recv_external(slice in_msg) impure { 
+  var (seqno, public_key, root_dict) = load_storage();
+  var (op, message) = verify_message(in_msg, public_key, seqno);
+  accept_message();
+
+  if op == 0 { ;; // register
+    root_dict = handle_register(message, root_dict);
+  } 
+  if op == 1 { ;; // change owner
+    public_key = handle_change_owner(message);
+  }
+  set_storage(seqno + 1, public_key, root_dict);
+}
+
+int seqno() method_id {
+  return get_data().begin_parse().preload_uint(32);
+}
+
+(int, cell) dnsresolve(slice query_string, int category) method_id {
+  var root_dict = get_data().begin_parse().skip_bits(32 + 256).preload_dict();
+  return handle_dnsresolve(root_dict, query_string, category);
+}
+
+
+;;// Implementation
 
 (int, int, cell) load_storage() impure inline {
   var s = get_data().begin_parse();
@@ -57,7 +94,7 @@ int handle_change_owner(slice message) impure inline {
         if found? {
           return (key_bits / 8, category_value.to_cell());
         } else {
-          return (key_bits / 8, new_dict()); 
+          return (-1, new_dict()); 
         }
       }
     } else { ;;// returning intermidiate item category=-1
@@ -71,33 +108,4 @@ int handle_change_owner(slice message) impure inline {
   } else {
     return (-1, new_dict());
   }
-}
-
-;; // Public API
-
-() recv_internal(slice in_msg) impure {
-}
-
-() recv_external(slice in_msg) impure { 
-  
-  var (seqno, public_key, root_dict) = load_storage();
-  var (op, message) = verify_message(in_msg, public_key, seqno);
-  accept_message();
-
-  if op == 0 { ;; // register
-    root_dict = handle_register(message, root_dict);
-  } 
-  if op == 1 { ;; // change owner
-    public_key = handle_change_owner(message);
-  }
-  set_storage(seqno + 1, public_key, root_dict);
-}
-
-int seqno() method_id {
-  return get_data().begin_parse().preload_uint(32);
-}
-
-(int, cell) dnsresolve(slice query_string, int category) method_id {
-  var root_dict = get_data().begin_parse().skip_bits(32 + 256).preload_dict();
-  return handle_dnsresolve(root_dict, query_string, category);
 }

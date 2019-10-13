@@ -121,32 +121,32 @@ PROGRAM{
           STSLICER
           ENDC	//  _30 _31
         }>	//  key_bits category_value
-        DROP	//  key_bits
-        3 RSHIFT#	//  _33
-        NEWDICT	//  _33 _34
+        2DROP	// 
+        TRUE
+        NULL	//  _48 _49
       }>	//  category key_bits dict
       s2 POP	//  dict key_bits
-      -1 PUSHINT	//  dict key_bits _36=-1
+      -1 PUSHINT	//  dict key_bits _34=-1
       ROT
-      16 PUSHINT	//  key_bits _36=-1 dict _37=16
+      16 PUSHINT	//  key_bits _34=-1 dict _35=16
       DICTIGET
       NULLSWAPIFNOT	//  key_bits category_value found?
       IFJMP:<{	//  key_bits category_value
         SWAP	//  category_value key_bits
-        3 RSHIFT#	//  category_value _40
-        SWAP	//  _40 category_value
+        3 RSHIFT#	//  category_value _38
+        SWAP	//  _38 category_value
         NEWC
         SWAP
         STSLICER
-        ENDC	//  _40 _41
+        ENDC	//  _38 _39
       }>	//  key_bits category_value
       2DROP	// 
-      -1 PUSHINT	//  _42=-1
-      NEWDICT	//  _42=-1 _43
+      TRUE
+      NULL	//  _52 _53
     }>	//  category query key value rem
     5 BLKDROP	// 
-    -1 PUSHINT	//  _44=-1
-    NEWDICT	//  _44=-1 _45
+    TRUE
+    NULL	//  _54 _55
   }>
   recv_internal PROC:<{
     //  in_msg
