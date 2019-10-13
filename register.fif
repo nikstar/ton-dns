@@ -1,81 +1,79 @@
 #!/usr/bin/env fift -s
 "TonUtil.fif" include
 
-{ ."usage: " @' $0 type ." <filename-base> <seqno> <subdomain> <category> <dns-value> <savefile>" cr
-  ."Creates a request to advanced wallet created by new-wallet-v2.fif, with private key loaded from file <filename-base>.pk "
-  ."and address from <filename-base>.addr, and saves it into <savefile>.boc ('wallet-query.boc' by default)" cr 1 halt
+{ ."usage: " @' $0 type ." <smc-address> <private-key> <subdomain> <entries> <seqno> [<savefile>]" cr
+  ."Creates change owner request for Manual DNS smart contract" cr
+  ."<smc-address>  [*.addr] contract address" cr
+  ."<private-key>  [*.pk] private key" cr
+  ."<subdomain>    name for subdomain to register" cr
+  ."<entries>      [*.txt] text file with dns entries for subdomain" cr
+  ."<seqno>        current seqno" cr
+  ."<savefile>     [*.boc] output file (default 'register.boc')" cr cr
+  ."Entries file should contain lines `ENTRY <category> <value>` where <category> is a 16-bit DNS category and <value> is base64url-encoded DNS value. "
+  ."NOTE: This message will overwrite current DNS entries for domain."
+  1 halt
 } : usage
 { ' usage if } : ?usage
 
-{ (number) 1- abort"workchain id must be an integer"
-  dup 16 fits not abort"category id must fit in 16 bits"
-} : parse-category
-
-
-$# 6 <> ?usage
-
-true constant bounce
-
-$1 =: filename-base
-$2 parse-int =: seqno
+$# 5 < ?usage
+$# 6 > ?usage
+$1 load-address 2=: smc-address
+."Smart contract address = " smc-address 2dup .addr cr 6 .Addr cr
+$2 load-keypair nip =: private-key
 $3 =: subdomain
-$4 parse-int =: category // TODO: check valid category
-$5 =: dns-value
-$6 =: savefile
+$4 =: entries-file
+$5 parse-int =: seqno
+def? $6 { @' $6 } { "register.boc" } cond =: savefile
 
-3 constant send-mode  // mode for SENDRAWMSG: +1 - sender pays fees, +2 - ignore errors
-60 constant timeout   // external message expires in 60 seconds
+// string - cat
+{ 
+  ."category " dup type cr
+  (number) 1- abort"category must be an integer"
+  dup 16 fits not abort"category must fit in 16 bits"
+} : parse-category
+// string - s
+{
+  ."entry " dup type cr
+  base64url>B
+  <b swap B, b> <s
+} : parse-base64url-value
+// D cat val – D'
+{
+  .s
+  swap rot 16 
+  .s
+  idict!
+  .s 1+ abort"failed to add entry to dictionary" // note: this ignores potential errors
+  .s
+} : add-entry
+{
+  bl word parse-category bl word parse-base64url-value add-entry
+} : ENTRY
 
-filename-base +".addr" load-address
-2dup 2constant wallet_addr
-."Source wallet address = " 2dup .addr cr 6 .Addr cr
-filename-base +".pk" load-keypair nip constant wallet_pk
+dictnew
+entries-file include 
 
+<b
+  seqno 32 u,
+  0 32 u, // op=0 (register)
+  <b
+    subdomain $,
+  b> ref,
+  swap ref, // dict
+b> =: message
+message hashB private-key ed25519_sign =: signature
 <b 
-    0 32 u, // method?
-    subdomain $, 
-    category 32 u, // category length in bits
-    dns-value $,
-b> 
-constant body-cell
-
-."Register subdomain " subdomain type 
-    ." seqno=" seqno .  
-    ." category=" category 
-    . ." dns-value=" dns-value type cr
-
-// create a message
-<b 
-    b{01} s, // what is this? send-mode?
-    bounce 1 i, 
-    b{000100} s, 
-    0 9 64 32 + + 1+ u, // 0 (64 + 32 + 9 + 1) u, ??????? wtf
-    body-cell // decide if body fits or not
-      <s 2dup s-fits? not rot over 1 i, -rot 
-          { drop body-cell ref, } 
-          { s, } cond
+  b{1000100} s, 
+  smc-address addr, 
+  0 Gram, 
+  b{01} s,
+  <b
+    signature B,
+    message <s s,
+  b> ref,
 b>
-<b 
-    seqno 32 u, 
-    now timeout + 32 u, 
-    send-mode 8 u, 
-    swap ref, 
-b>
-
-dup ."signing message: " <s csr. cr
-dup hashu wallet_pk ed25519_sign_uint
-
-<b 
-    b{1000100} s, 
-    wallet_addr addr, 
-    0 Gram, 
-    b{00} s,
-    swap B, 
-    swap <s s, 
-b>
-dup ."resulting external message: " <s csr. cr
-
+."Content: " cr message <s csr.
+dup ."Resulting external message: " cr <s csr. cr
 2 boc+>B dup Bx. cr
-savefile +".boc" tuck B>file
-."Query expires in " timeout . ."seconds" cr
-."(Saved to file " type .")" cr
+savefile tuck B>file
+."Saved external message to file: " type cr
