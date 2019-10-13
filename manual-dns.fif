@@ -1,0 +1,199 @@
+// automatically generated from `stdlib.fc` `stdlib_ext.fc` `manual-dns.fc` 
+PROGRAM{
+  DECLPROC load_storage
+  DECLPROC set_storage
+  DECLPROC verify_message
+  DECLPROC handle_register
+  DECLPROC handle_change_owner
+  DECLPROC handle_dnsresolve
+  DECLPROC recv_internal
+  DECLPROC recv_external
+  85143 DECLMETHOD seqno
+  123660 DECLMETHOD dnsresolve
+  load_storage PROC:<{
+    // 
+    c4 PUSH	//  _1
+    CTOS	//  s
+    32 LDU	//  _6 s
+    256 LDU	//  _6 _9 s
+    LDDICT	//  seqno public_key root_dict s
+    ENDS
+  }>
+  set_storage PROC:<{
+    //  seqno public_key root_dict
+    NEWC	//  seqno public_key root_dict _3
+    s1 s3 XCHG	//  root_dict public_key seqno _3
+    32 STU	//  root_dict public_key _5
+    256 STU	//  root_dict _7
+    STDICT	//  _8
+    ENDC	//  _9
+    c4 POP
+  }>
+  verify_message PROC:<{
+    //  in_msg public_key stored_seqno
+    s0 s2 XCHG
+    9 PUSHPOW2	//  stored_seqno public_key in_msg _5=512
+    LDSLICEX	//  stored_seqno public_key signature in_msg
+    DUP	//  stored_seqno public_key signature in_msg in_msg
+    HASHSU	//  stored_seqno public_key signature in_msg _8
+    s0 s0 s3 XCHG3	//  stored_seqno in_msg _8 signature public_key
+    CHKSIGNU	//  stored_seqno in_msg _9
+    32 THROWIFNOT
+    32 LDU	//  stored_seqno _13 in_msg
+    32 LDI	//  stored_seqno seqno op in_msg
+    s2 s3 XCHG2	//  in_msg op seqno stored_seqno
+    EQUAL	//  in_msg op _20
+    33 THROWIFNOT
+    DUP	//  in_msg op op
+    -2 GTINT	//  in_msg op _24
+    34 THROWIFNOT
+    DUP	//  in_msg op op
+    2 LESSINT	//  in_msg op _28
+    34 THROWIFNOT
+    SWAP	//  op in_msg
+  }>
+  handle_register PROC:<{
+    //  message stored_dict
+    SWAP	//  stored_dict message
+    LDREF	//  stored_dict _3 message
+    SWAP	//  stored_dict message _3
+    CTOS	//  stored_dict message name
+    SWAP	//  stored_dict name message
+    LDREF	//  stored_dict name dns_dict message
+    ENDS
+    CTOS	//  stored_dict name _12
+    s0 s2 XCHG
+    10 PUSHPOW2DEC	//  _12 name stored_dict _13=1023
+    PFXDICTSET	//  stored_dict ok?
+    35 THROWIFNOT
+  }>
+  handle_change_owner PROC:<{
+    //  message
+    256 LDU	//  new_public_key message
+    ENDS
+  }>
+  handle_dnsresolve PROC:<{
+    //  root_dict query category
+    10 PUSHPOW2DEC	//  root_dict query category _7=1023
+    s2 s3 s3 PUXC2	//  category query query root_dict _7=1023
+    PFXDICTGETQ
+    NULLROTRIFNOT
+    NULLROTRIFNOT	//  category query key value rem found?
+    IFJMP:<{	//  category query key value rem
+      SWAP	//  category query key rem value
+      NEWC
+      SWAP
+      STSLICER
+      ENDC	//  category query key rem dict
+      s0 s2 XCHG	//  category query dict rem key
+      SBITS	//  category query dict rem key_bits
+      s0 s3 XCHG	//  category key_bits dict rem query
+      SBITS	//  category key_bits dict rem _14
+      s3 s(-1) PUXC	//  category key_bits dict rem key_bits _14
+      EQUAL	//  category key_bits dict rem ok?
+      DUP	//  category key_bits dict rem ok? ok?
+      0 EQINT	//  category key_bits dict rem ok? _17
+      IF:<{	//  category key_bits dict rem ok?
+        DROP	//  category key_bits dict rem
+        8 PLDI	//  category key_bits dict _19
+        0 EQINT	//  category key_bits dict ok?
+      }>ELSE<{
+        NIP	//  category key_bits dict ok?
+      }>
+      IFJMP:<{	//  category key_bits dict
+        s2 PUSH	//  category key_bits dict category
+        0 EQINT	//  category key_bits dict _23
+        IFJMP:<{	//  category key_bits dict
+          s2 POP	//  dict key_bits
+          3 RSHIFT#	//  dict _25
+          SWAP	//  _25 dict
+        }>	//  category key_bits dict
+        s1 s2 XCHG
+        16 PUSHINT	//  key_bits category dict _27=16
+        DICTIGET
+        NULLSWAPIFNOT	//  key_bits category_value found?
+        IFJMP:<{	//  key_bits category_value
+          SWAP	//  category_value key_bits
+          3 RSHIFT#	//  category_value _30
+          SWAP	//  _30 category_value
+          NEWC
+          SWAP
+          STSLICER
+          ENDC	//  _30 _31
+        }>	//  key_bits category_value
+        DROP	//  key_bits
+        3 RSHIFT#	//  _33
+        NEWDICT	//  _33 _34
+      }>	//  category key_bits dict
+      s2 POP	//  dict key_bits
+      -1 PUSHINT	//  dict key_bits _36=-1
+      ROT
+      16 PUSHINT	//  key_bits _36=-1 dict _37=16
+      DICTIGET
+      NULLSWAPIFNOT	//  key_bits category_value found?
+      IFJMP:<{	//  key_bits category_value
+        SWAP	//  category_value key_bits
+        3 RSHIFT#	//  category_value _40
+        SWAP	//  _40 category_value
+        NEWC
+        SWAP
+        STSLICER
+        ENDC	//  _40 _41
+      }>	//  key_bits category_value
+      2DROP	// 
+      -1 PUSHINT	//  _42=-1
+      NEWDICT	//  _42=-1 _43
+    }>	//  category query key value rem
+    5 BLKDROP	// 
+    -1 PUSHINT	//  _44=-1
+    NEWDICT	//  _44=-1 _45
+  }>
+  recv_internal PROC:<{
+    //  in_msg
+    DROP	// 
+  }>
+  recv_external PROC:<{
+    //  in_msg
+    load_storage INLINECALLDICT	//  in_msg seqno public_key root_dict
+    s3 s1 s2 XCPU2	//  root_dict seqno public_key in_msg public_key seqno
+    verify_message INLINECALLDICT	//  root_dict seqno public_key op message
+    ACCEPT
+    OVER	//  root_dict seqno public_key op message op
+    0 EQINT	//  root_dict seqno public_key op message _10
+    IF:<{	//  root_dict seqno public_key op message
+      s0 s4 PUXC	//  message seqno public_key op message root_dict
+      handle_register INLINECALLDICT	//  message seqno public_key op root_dict
+    }>ELSE<{
+      s0 s4 XCHG	//  message seqno public_key op root_dict
+    }>
+    SWAP	//  message seqno public_key root_dict op
+    1 EQINT	//  message seqno public_key root_dict _13
+    IF:<{	//  message seqno public_key root_dict
+      NIP	//  message seqno root_dict
+      s0 s2 XCHG	//  root_dict seqno message
+      handle_change_owner INLINECALLDICT	//  root_dict seqno public_key
+    }>ELSE<{
+      s3 POP	//  root_dict seqno public_key
+    }>
+    SWAP	//  root_dict public_key seqno
+    INC	//  root_dict public_key _16
+    s0 s2 XCHG	//  _16 public_key root_dict
+    set_storage INLINECALLDICT
+  }>
+  seqno PROC:<{
+    // 
+    c4 PUSH	//  _0
+    CTOS	//  _1
+    32 PLDU	//  _3
+  }>
+  dnsresolve PROC:<{
+    //  query_string category
+    c4 PUSH	//  query_string category _3
+    CTOS	//  query_string category _4
+    288 PUSHINT	//  query_string category _4 _7
+    SDSKIPFIRST	//  query_string category _8
+    PLDDICT	//  query_string category root_dict
+    -ROT	//  root_dict query_string category
+    handle_dnsresolve INLINECALLDICT	//  _11 _12
+  }>
+}END>c
