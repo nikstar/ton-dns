@@ -21,7 +21,7 @@ b> =: storage
     <b
       rot $,   // name
     b> ref,
-    swap ref,  // dict
+    swap dict,  // dict
   b>
   tuck hashB swap ed25519_sign
   <b
