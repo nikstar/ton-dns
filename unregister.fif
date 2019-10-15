@@ -1,0 +1,50 @@
+#!/usr/bin/env fift -s
+"TonUtil.fif" include
+
+{ ."usage: " @' $0 type ." <smc-address> <private-key> <subdomain> <seqno> [<savefile>]" cr
+  ."Unregisters <subdomain>." cr
+  ."<smc-address>  [*.addr] contract address" cr
+  ."<private-key>  [*.pk] private key" cr
+  ."<subdomain>    name for subdomain to register" cr
+  ."<seqno>        current seqno" cr
+  ."<savefile>     [*.boc] output file (default 'unregister.boc')" cr cr
+  ."Entries file should contain lines `ENTRY <category> <value>` where <category> is a 16-bit DNS category and <value> is base64url-encoded DNS value. "
+  ."NOTE: This message will overwrite current DNS entries for domain."
+  1 halt
+} : usage
+{ ' usage if } : ?usage
+
+$# 5 < ?usage
+$# 6 > ?usage
+$1 load-address 2=: smc-address
+."Smart contract address = " smc-address 2dup .addr cr 6 .Addr cr
+$2 load-keypair nip =: private-key
+$3 =: subdomain
+$4 parse-int =: seqno
+def? $5 { @' $5 } { "unregister.boc" } cond =: savefile
+
+// sending a normal register message with NULL dictionary
+<b
+  seqno 32 u,
+  0 32 u, // op=0 (register)
+  <b
+    subdomain $,
+  b> ref,
+  dictnew dict,
+b> =: message
+message hashB private-key ed25519_sign =: signature
+<b 
+  b{1000100} s, 
+  smc-address addr, 
+  0 Gram, 
+  b{01} s,
+  <b
+    signature B,
+    message <s s,
+  b> ref,
+b>
+."Content: " cr message <s csr.
+dup ."Resulting external message: " cr <s csr. cr
+2 boc+>B dup Bx. cr
+savefile tuck B>file
+."Saved external message to file: " type cr
