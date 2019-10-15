@@ -2,15 +2,15 @@
 "TonUtil.fif" include
 
 { ."usage: " @' $0 type ." <smc-address> <private-key> <subdomain> <entries> <seqno> [<savefile>]" cr
-  ."Creates change owner request for Manual DNS smart contract" cr
+  ."Registers <entries> for <subdomain>" cr cr
   ."<smc-address>  [*.addr] contract address" cr
   ."<private-key>  [*.pk] private key" cr
   ."<subdomain>    name for subdomain to register" cr
   ."<entries>      [*.txt] text file with dns entries for subdomain" cr
   ."<seqno>        current seqno" cr
   ."<savefile>     [*.boc] output file (default 'register.boc')" cr cr
-  ."Entries file should contain lines `ENTRY <category> <value>` where <category> is a 16-bit DNS category and <value> is base64url-encoded DNS value. "
-  ."NOTE: This message will overwrite current DNS entries for domain."
+  ."Entries file should contain lines `<category> => <value-type> <value>` where <category> is a 16-bit DNS category, <value-type> is one of supported value types (address, file, base64, base64url, text, hex) and <value> is DNS value in corresponding format. "
+  ."NOTE: This message will overwrite current DNS entries for domain if present."
   1 halt
 } : usage
 { ' usage if } : ?usage
@@ -68,7 +68,7 @@ entries-file include
   <b
     subdomain $,
   b> ref,
-  swap dict, // dict
+  swap dict,
 b> =: message
 message hashB private-key ed25519_sign =: signature
 <b 
