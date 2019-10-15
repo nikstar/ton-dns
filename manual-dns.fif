@@ -55,17 +55,28 @@ PROGRAM{
   handle_register PROC:<{
     //  message stored_dict
     SWAP	//  stored_dict message
-    LDREF	//  stored_dict _3 message
-    SWAP	//  stored_dict message _3
-    CTOS	//  stored_dict message name
-    SWAP	//  stored_dict name message
-    LDREF	//  stored_dict name dns_dict message
+    LDREF	//  stored_dict name message
+    LDDICT	//  stored_dict name dns_dict message
     ENDS
-    CTOS	//  stored_dict name _12
-    s0 s2 XCHG
-    10 PUSHPOW2DEC	//  _12 name stored_dict _13=1023
-    PFXDICTSET	//  stored_dict ok?
-    35 THROWIFNOT
+    DUP	//  stored_dict name dns_dict dns_dict
+    ISNULL	//  stored_dict name dns_dict _9
+    NOT	//  stored_dict name dns_dict _10
+    IF:<{	//  stored_dict name dns_dict
+      CTOS	//  stored_dict name _13
+      SWAP	//  stored_dict _13 name
+      CTOS	//  stored_dict _13 _14
+      ROT
+      10 PUSHPOW2DEC	//  _13 _14 stored_dict _15=1023
+      PFXDICTSET	//  stored_dict ok?
+      35 THROWIFNOT
+    }>ELSE<{	//  stored_dict name dns_dict
+      DROP	//  stored_dict name
+      CTOS	//  stored_dict _20
+      SWAP
+      10 PUSHPOW2DEC	//  _20 stored_dict _21=1023
+      PFXDICTDEL	//  _29 _30
+      DROP	//  stored_dict
+    }>
   }>
   handle_change_owner PROC:<{
     //  message

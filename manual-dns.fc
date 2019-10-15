@@ -65,11 +65,15 @@ int seqno() method_id {
 }
 
 cell handle_register(slice message, cell stored_dict) impure inline {
-  var name = message~load_ref().begin_parse();
-  var dns_dict = message~load_ref();
+  var name = message~load_ref();
+  var dns_dict = message~load_dict();
   message.end_parse();
-  var ok? = stored_dict~pfxdict_set(1023, name, dns_dict.begin_parse());
-  throw_unless(35, ok?);
+  if ~ dns_dict.cell_null?() {
+    var ok? = stored_dict~pfxdict_set(1023, name.begin_parse(), dns_dict.begin_parse());
+    throw_unless(35, ok?);
+  } else {
+    stored_dict~pfxdict_delete(1023, name.begin_parse()); ;;// no need to throw
+  }
   return stored_dict;
 }
 

@@ -21,7 +21,11 @@ cell to_cell(slice s)
 (cell, int) pfxdict_set(cell dict, int max_key_len, slice key, slice value) 
   asm(value key dict max_key_len) "PFXDICTSET";
 
-;; // todo remaining methods:
-;; // PFXDICTREPLACE (x k D n – D' −1 or D 0).
-;; // PFXDICTADD (x k D n – D' −1 or D 0).
-;; // PFXDICTDEL (k D n – D' −1 or D 0).
+;;// PFXDICTDEL (k D n – D' −1 or D 0)
+;;// returns (dict, ok?)
+(cell, int) pfxdict_delete(cell dict, int max_key_len, slice key) 
+  asm(key dict max_key_len) "PFXDICTDEL";
+
+;;// todo remaining methods:
+;;// PFXDICTREPLACE (x k D n – D' −1 or D 0)
+;;// PFXDICTADD (x k D n – D' −1 or D 0)

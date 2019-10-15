@@ -68,7 +68,7 @@ entries-file include
   <b
     subdomain $,
   b> ref,
-  swap ref, // dict
+  swap dict, // dict
 b> =: message
 message hashB private-key ed25519_sign =: signature
 <b 
