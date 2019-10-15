@@ -30,7 +30,7 @@ def? $6 { @' $6 } { "register.boc" } cond =: savefile
 // wc addr - B
 { 
   <b 
-    rot 32 i,
+    rot 8 i,
     swap 256 u,
   b> <s
 } : smca>s
