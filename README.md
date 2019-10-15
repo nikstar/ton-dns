@@ -33,7 +33,7 @@ Feel free to [get in touch](https://t.me/nikstar). This project is hosted [on Gi
 New subdomains can be registered using [register.fif](register.fif):
 
 ```bash
-fift -s register.fif files/id1.addr out/id1.pk "ru" files/entries.txt 3 files/reg1.boc
+fift -s register.fif files/id1.addr out/id1.pk "ru" files/entries.txt 1 files/reg1.boc
 ```
 
 (Run without options for help.)
@@ -53,6 +53,16 @@ As you can see, values can be provided in any desired format: imported from file
 
 This format can be easily extended for further convenience once more details of DNS are nailed down. For example, aliases for predefined categories can be used: `-2 constant OWNER`, `1 constant CNAME` and so on. See [register.fif](register.fif) for implementation details.
 
+### Unregistering subdomains
+
+Subdomains can be deleted using [unregister.fif](unregister.fif):
+
+```bash
+fift -s unregister.fif files/id1.addr out/id1.pk "ru" 2 files/unreg1.boc
+```
+
+This is equivalent to passing an empty file to `register.fif`.
+
 ## Dnsresolve
 
 Dnsresolve get-method has been implemented according to spec. In this example
@@ -70,7 +80,7 @@ One thing I was not clear about is handling string with multiple subdomain names
 Owner (i.e. public key stored in smc persistent storage) can be changed using [change-owner.fif](change-owner.fif):
 
 ```bash
-fift -s change-owner.fif files/id1.addr files/id1 files/id2.pub 1 files/change12
+fift -s change-owner.fif files/id1.addr files/id1 files/id2.pub 3 files/change12
 ```
 
 Note that public key file can be obtained by running `fift -s pub.fif files/id2`. Current owner does not necessarily have access to new private key, so this interface was chosen.
