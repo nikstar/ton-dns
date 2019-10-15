@@ -40,7 +40,7 @@ PROGRAM{
     CHKSIGNU	//  stored_seqno in_msg _9
     32 THROWIFNOT
     32 LDU	//  stored_seqno _13 in_msg
-    32 LDI	//  stored_seqno seqno op in_msg
+    8 LDI	//  stored_seqno seqno op in_msg
     s2 s3 XCHG2	//  in_msg op seqno stored_seqno
     EQUAL	//  in_msg op _20
     33 THROWIFNOT

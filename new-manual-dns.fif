@@ -51,7 +51,7 @@ cr
 // sign
 <b 
   0 32 u,  // seqno
-  -1 32 i, // op=-1 (do nothing)
+  -1 8 i, // op=-1 (do nothing)
 b> =: first-message
 first-message ."first message: " cr <s csr. cr
 first-message hashu private-key ed25519_sign_uint =: signature
@@ -70,5 +70,5 @@ dup ."external message for init:" cr <s csr. cr
 
 // save to file
 2 boc+>B dup Bx. cr
-filename-base +".boc" tuck B>file
+filename-base +"-create.boc" tuck B>file
 ."saved external message to file: " type cr

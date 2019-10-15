@@ -16,7 +16,7 @@ b> =: storage
 
 <b
     0 32 u, // seqno
-    1 32 u, // op
+    1 8 u, // op
     pubkey2 B,
 b> =: message
 message hashB privkey1 ed25519_sign =: signature
@@ -46,7 +46,7 @@ in_msg code storage runvm_external =: storage =: exit_code cr
 
 <b
     1 32 u,
-    1 32 u,
+    1 8 u,
     pubkey1 B,
 b> =: message
 message hashu privkey2 ed25519_sign_uint =: signature

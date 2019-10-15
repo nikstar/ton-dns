@@ -36,7 +36,7 @@ def? $5 { @' $5 } { "change-owner.boc" } cond =: savefile
 
 <b
   seqno 32 u,
-  1 32 u, // op=1 (change owner)
+  1 8 u, // op=1 (change owner)
   new-public-key B,
 b> =: message
 message hashB private-key ed25519_sign =: signature

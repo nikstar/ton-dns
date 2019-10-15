@@ -1,4 +1,4 @@
--2 => file out/id1.pub
+-2 => file files/id1.pub
 -1 => address kQCnvV61wU5cLVghtZGlgGs_uS-Kzhgc1wp3K-3pyxH7z6xv
  1 => text Hello darkness, my old friend
  2 => base64 SSd2ZSBjb21lIHRvIHRhbGsgd2l0aCB5b3UgYWdhaW4K

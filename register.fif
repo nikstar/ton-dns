@@ -64,7 +64,7 @@ entries-file include
 
 <b
   seqno 32 u,
-  0 32 u, // op=0 (register)
+  0 8 u, // op=0 (register)
   <b
     subdomain $,
   b> ref,

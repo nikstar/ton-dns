@@ -57,7 +57,7 @@ int seqno() method_id {
 (int, slice) verify_message(slice in_msg, int public_key, int stored_seqno) impure inline {
   var signature = in_msg~load_bits(512);
   throw_unless(32, check_signature(slice_hash(in_msg), signature, public_key));
-  var (seqno, op) = (in_msg~load_uint(32), in_msg~load_int(32));
+  var (seqno, op) = (in_msg~load_uint(32), in_msg~load_int(8));
   throw_unless(33, seqno == stored_seqno);
   throw_unless(34, -1 <= op);
   throw_unless(34, op <= 1); ;; // no &&?
@@ -102,7 +102,7 @@ int handle_change_owner(slice message) impure inline {
         }
       }
     } else { ;;// returning intermidiate item category=-1
-      (var category_value, found?) = idict_get?(dict, 16, -1);
+      (var category_value, found?) = dict.idict_get?(16, -1);
       if found? {
         return (key_bits / 8, category_value.to_cell());
       } else {

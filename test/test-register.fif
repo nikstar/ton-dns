@@ -17,11 +17,11 @@ b> =: storage
 { // make-message
   <b
     swap 32 u, // seqno
-    0 32 u,    // method
+    0 8 u,     // op
     <b
       rot $,   // name
     b> ref,
-    swap dict,  // dict
+    swap dict, 
   b>
   tuck hashB swap ed25519_sign
   <b
