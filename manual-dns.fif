@@ -133,7 +133,7 @@ PROGRAM{
           ENDC	//  _30 _31
         }>	//  key_bits category_value
         2DROP	// 
-        TRUE
+        ZERO
         NULL	//  _48 _49
       }>	//  category key_bits dict
       s2 POP	//  dict key_bits
@@ -152,11 +152,11 @@ PROGRAM{
         ENDC	//  _38 _39
       }>	//  key_bits category_value
       2DROP	// 
-      TRUE
+      ZERO
       NULL	//  _52 _53
     }>	//  category query key value rem
     5 BLKDROP	// 
-    TRUE
+    ZERO
     NULL	//  _54 _55
   }>
   recv_internal PROC:<{
