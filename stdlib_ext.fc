@@ -2,7 +2,7 @@
 cell to_cell(slice s) 
     asm "NEWC" "SWAP" "STSLICER" "ENDC";
 
-;;// returns (-1, null)
+;;// returns (0, null)
 (int, cell) not_found() 
   asm() "ZERO" "NULL";
 
