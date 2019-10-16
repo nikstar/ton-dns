@@ -1,6 +1,6 @@
 # Manual DNS
 
-This project implements **manual DNS** smart contact, along with scripts needed to register subdomains and change smart contract ownership. 
+This project implements **manual DNS** smart contract, along with scripts needed to register subdomains and change smart contract ownership. 
 
 DNS values are parsed from specially formatted text files which let user store text or binary data. This submission includes scripts for generating public keys and local testing.
 
