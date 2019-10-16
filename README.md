@@ -69,9 +69,9 @@ Dnsresolve get-method has been implemented according to spec. In this example
 
 - `dnsresolve "ru." 0` returns (3, dictionary from category to dns-value),
 - `dnsresolve "ru." 1` returns (3, dns-value),
-- `dnsresolve "ru." 42` returns (-1, null),
-- `dnsresolve "ru.yandex" 0` returns (3, dns-value for category=-1) (if category=-1 is not set, returns (-1, null)),
-- `dnsresolve "org." 0` returns (-1, null).
+- `dnsresolve "ru." 42` returns (0, null),
+- `dnsresolve "ru.yandex" 0` returns (3, dns-value for category=-1) (if category=-1 is not set, returns (0, null)),
+- `dnsresolve "org." 0` returns (0, null).
 
 One thing I was not clear about is handling string with multiple subdomain names, e.g. `ru\0org\0`. I opted to return value for the first subdomain (`ru` in this case) and ignore the rest of the string. If smc is expected to return values for *any* of the names provided, it is unclear what to return as the first value (number of bytes consumed).
 

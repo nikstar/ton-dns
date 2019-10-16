@@ -4,7 +4,7 @@ cell to_cell(slice s)
 
 ;;// returns (-1, null)
 (int, cell) not_found() 
-  asm() "TRUE" "NULL";
+  asm() "ZERO" "NULL";
 
 ;;// PFXDICTGETQ (s D n – s' x s'' −1 or s')
 ;;// returns (found_prefix_key, found_value, remainder_of_key, found?=-1) or (null, null, key, 0)
