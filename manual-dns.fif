@@ -156,23 +156,23 @@ PROGRAM{
     OVER	//  root_dict seqno public_key op message op
     0 EQINT	//  root_dict seqno public_key op message _10
     IF:<{	//  root_dict seqno public_key op message
-      s0 s4 PUXC	//  message seqno public_key op message root_dict
-      handle_register INLINECALLDICT	//  message seqno public_key op root_dict
-    }>ELSE<{
-      s0 s4 XCHG	//  message seqno public_key op root_dict
+      NIP	//  root_dict seqno public_key message
+      s0 s3 XCHG2	//  public_key seqno message root_dict
+      handle_register INLINECALLDICT	//  public_key seqno root_dict
+    }>ELSE<{	//  root_dict seqno public_key op message
+      SWAP	//  root_dict seqno public_key message op
+      1 EQINT	//  root_dict seqno public_key message _13
+      IF:<{	//  root_dict seqno public_key message
+        NIP	//  root_dict seqno message
+        handle_change_owner INLINECALLDICT	//  root_dict seqno public_key
+      }>ELSE<{
+        DROP	//  root_dict seqno public_key
+      }>
+      s0 s2 XCHG	//  public_key seqno root_dict
     }>
-    SWAP	//  message seqno public_key root_dict op
-    1 EQINT	//  message seqno public_key root_dict _13
-    IF:<{	//  message seqno public_key root_dict
-      NIP	//  message seqno root_dict
-      s0 s2 XCHG	//  root_dict seqno message
-      handle_change_owner INLINECALLDICT	//  root_dict seqno public_key
-    }>ELSE<{
-      s3 POP	//  root_dict seqno public_key
-    }>
-    SWAP	//  root_dict public_key seqno
-    INC	//  root_dict public_key _16
-    s0 s2 XCHG	//  _16 public_key root_dict
+    SWAP	//  public_key root_dict seqno
+    INC	//  public_key root_dict _16
+    -ROT	//  _16 public_key root_dict
     set_storage INLINECALLDICT
   }>
   seqno PROC:<{

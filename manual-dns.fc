@@ -17,11 +17,9 @@ int handle_change_owner(slice message) impure inline;
   var (seqno, public_key, root_dict) = load_storage();
   var (op, message) = verify_message(in_msg, public_key, seqno);
   accept_message();
-
-  if op == 0 { ;; // register
+  if op == 0 { ;;// register
     root_dict = handle_register(message, root_dict);
-  } 
-  if op == 1 { ;; // change owner
+  } elseif op == 1 { ;;// change owner
     public_key = handle_change_owner(message);
   }
   set_storage(seqno + 1, public_key, root_dict);
