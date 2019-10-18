@@ -59,8 +59,7 @@ int seqno() method_id {
   throw_unless(32, check_signature(slice_hash(in_msg), signature, public_key));
   var (seqno, op) = (in_msg~load_uint(32), in_msg~load_int(8));
   throw_unless(33, seqno == stored_seqno);
-  throw_unless(34, -1 <= op);
-  throw_unless(34, op <= 1); ;; // no &&?
+  throw_unless(34, (-1 <= op) & (op <= 1));
   return (op, in_msg);
 }
 
@@ -68,7 +67,7 @@ cell handle_register(slice message, cell stored_dict) impure inline {
   var name = message~load_ref();
   var dns_dict = message~load_dict();
   message.end_parse();
-  if ~ dns_dict.cell_null?() {
+  ifnot dns_dict.cell_null?() {
     var ok? = stored_dict~pfxdict_set(1023, name.begin_parse(), dns_dict.begin_parse());
     throw_unless(35, ok?);
   } else {
@@ -89,24 +88,16 @@ int handle_change_owner(slice message) impure inline {
     var dict = value.to_cell();
     var key_bits = key.slice_bits();
     var ok? = key_bits == query.slice_bits();
-    if ok? == 0 { ok? = rem.preload_int(8) == 0; } ;;// zero-terminated case
-    if ok? { ;;// successfully fetched target item
-      if category == 0 { ;;// return entire dict
-        return (key_bits / 8, dict);
-      } else { ;;// fetch requested category
-        (var category_value, found?) = dict.idict_get?(16, category);
-        if found? {
-          return (key_bits / 8, category_value.to_cell());
-        } else {
-          return not_found(); 
-        }
-      }
-    } else { ;;// returning intermidiate item category=-1
-      (var category_value, found?) = dict.idict_get?(16, -1);
+    ifnot ok? { ok? = rem.preload_int(8) == 0; } ;;// zero-terminated case
+    ifnot ok? { category = -1; } ;;// fetch -1 for intermediate item
+    if category == 0 { ;;// return entire dict
+      return (key_bits / 8, dict);
+    } else { ;;// fetch requested category
+      (var category_value, found?) = dict.idict_get?(16, category);
       if found? {
         return (key_bits / 8, category_value.to_cell());
       } else {
-        return not_found(); ;;// no redirect data
+        return not_found(); 
       }
     }
   } else {

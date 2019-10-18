@@ -46,9 +46,9 @@ PROGRAM{
     33 THROWIFNOT
     DUP	//  in_msg op op
     -2 GTINT	//  in_msg op _24
-    34 THROWIFNOT
-    DUP	//  in_msg op op
-    2 LESSINT	//  in_msg op _28
+    OVER	//  in_msg op _24 op
+    2 LESSINT	//  in_msg op _24 _26
+    AND	//  in_msg op _27
     34 THROWIFNOT
     SWAP	//  op in_msg
   }>
@@ -60,22 +60,21 @@ PROGRAM{
     ENDS
     DUP	//  stored_dict name dns_dict dns_dict
     ISNULL	//  stored_dict name dns_dict _9
-    NOT	//  stored_dict name dns_dict _10
     IF:<{	//  stored_dict name dns_dict
-      CTOS	//  stored_dict name _13
-      SWAP	//  stored_dict _13 name
-      CTOS	//  stored_dict _13 _14
+      DROP	//  stored_dict name
+      CTOS	//  stored_dict _19
+      SWAP
+      10 PUSHPOW2DEC	//  _19 stored_dict _20=1023
+      PFXDICTDEL	//  _28 _29
+      DROP	//  stored_dict
+    }>ELSE<{	//  stored_dict name dns_dict
+      CTOS	//  stored_dict name _12
+      SWAP	//  stored_dict _12 name
+      CTOS	//  stored_dict _12 _13
       ROT
-      10 PUSHPOW2DEC	//  _13 _14 stored_dict _15=1023
+      10 PUSHPOW2DEC	//  _12 _13 stored_dict _14=1023
       PFXDICTSET	//  stored_dict ok?
       35 THROWIFNOT
-    }>ELSE<{	//  stored_dict name dns_dict
-      DROP	//  stored_dict name
-      CTOS	//  stored_dict _20
-      SWAP
-      10 PUSHPOW2DEC	//  _20 stored_dict _21=1023
-      PFXDICTDEL	//  _29 _30
-      DROP	//  stored_dict
     }>
   }>
   handle_change_owner PROC:<{
@@ -103,61 +102,46 @@ PROGRAM{
       s3 s(-1) PUXC	//  category key_bits dict rem key_bits _14
       EQUAL	//  category key_bits dict rem ok?
       DUP	//  category key_bits dict rem ok? ok?
-      0 EQINT	//  category key_bits dict rem ok? _17
-      IF:<{	//  category key_bits dict rem ok?
+      IFNOT:<{	//  category key_bits dict rem ok?
         DROP	//  category key_bits dict rem
-        8 PLDI	//  category key_bits dict _19
+        8 PLDI	//  category key_bits dict _17
         0 EQINT	//  category key_bits dict ok?
       }>ELSE<{
         NIP	//  category key_bits dict ok?
       }>
-      IFJMP:<{	//  category key_bits dict
-        s2 PUSH	//  category key_bits dict category
-        0 EQINT	//  category key_bits dict _23
-        IFJMP:<{	//  category key_bits dict
-          s2 POP	//  dict key_bits
-          3 RSHIFT#	//  dict _25
-          SWAP	//  _25 dict
-        }>	//  category key_bits dict
-        s1 s2 XCHG
-        16 PUSHINT	//  key_bits category dict _27=16
-        DICTIGET
-        NULLSWAPIFNOT	//  key_bits category_value found?
-        IFJMP:<{	//  key_bits category_value
-          SWAP	//  category_value key_bits
-          3 RSHIFT#	//  category_value _30
-          SWAP	//  _30 category_value
-          NEWC
-          SWAP
-          STSLICER
-          ENDC	//  _30 _31
-        }>	//  key_bits category_value
-        2DROP	// 
-        ZERO
-        NULL	//  _48 _49
-      }>	//  category key_bits dict
-      s2 POP	//  dict key_bits
-      -1 PUSHINT	//  dict key_bits _34=-1
+      IFNOT:<{	//  category key_bits dict
+        s2 POP	//  dict key_bits
+        -1 PUSHINT	//  dict key_bits category=-1
+      }>ELSE<{
+        s0 s2 XCHG	//  dict key_bits category
+      }>
+      DUP	//  dict key_bits category category
+      0 EQINT	//  dict key_bits category _22
+      IFJMP:<{	//  dict key_bits category
+        DROP	//  dict key_bits
+        3 RSHIFT#	//  dict _24
+        SWAP	//  _24 dict
+      }>	//  dict key_bits category
       ROT
-      16 PUSHINT	//  key_bits _34=-1 dict _35=16
+      16 PUSHINT	//  key_bits category dict _26=16
       DICTIGET
       NULLSWAPIFNOT	//  key_bits category_value found?
       IFJMP:<{	//  key_bits category_value
         SWAP	//  category_value key_bits
-        3 RSHIFT#	//  category_value _38
-        SWAP	//  _38 category_value
+        3 RSHIFT#	//  category_value _29
+        SWAP	//  _29 category_value
         NEWC
         SWAP
         STSLICER
-        ENDC	//  _38 _39
+        ENDC	//  _29 _30
       }>	//  key_bits category_value
       2DROP	// 
       ZERO
-      NULL	//  _52 _53
+      NULL	//  _39 _40
     }>	//  category query key value rem
     5 BLKDROP	// 
     ZERO
-    NULL	//  _54 _55
+    NULL	//  _41 _42
   }>
   recv_internal PROC:<{
     //  in_msg
