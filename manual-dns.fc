@@ -86,7 +86,7 @@ int handle_change_owner(slice message) impure inline {
     var dict = value.to_cell();
     var key_bits = key.slice_bits();
     var ok? = key_bits == query.slice_bits();
-    ifnot ok? { ok? = rem.preload_int(8) == 0; } ;;// zero-terminated case
+    ifnot ok? { ok? = rem.preload_int(8) == 0; } ;;// terminating zero can be omitted from dnsresolve call
     ifnot ok? { category = -1; } ;;// fetch -1 for intermediate item
     if category == 0 { ;;// return entire dict
       return (key_bits / 8, dict);
