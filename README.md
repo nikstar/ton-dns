@@ -1,5 +1,7 @@
 # Manual DNS
 
+*This contact won II place prize in the first [blockchain contest](https://contest.com/blockchain). [Entry page](https://contest.com/blockchain/entry364) contains version that was submitted, and notes by judges.*
+
 This project implements **manual DNS** smart contract, along with scripts needed to register subdomains and change smart contract ownership. 
 
 DNS values are parsed from specially formatted text files which let user store text or binary data. This submission includes scripts for generating public keys and local testing.
